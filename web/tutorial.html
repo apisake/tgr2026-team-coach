@@ -1,0 +1,1454 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IPST-WiFi Arduino Tutorial</title>
+<meta name="description" content="บทเรียน Arduino + ESP32 บนบอร์ด IPST-WiFi สำหรับทีม TGR2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* สไตล์เดียวกับ plan.html: คอลัมน์อ่านเดียว, แถบบทเรียน sticky, โค้ดพับได้ */
+:root {
+  --bg: #F6F8F7; --surface: #FFFFFF; --fg: #16201D; --muted: #5A6763; --line: #DCE3E0;
+  --viridian: #40826D; --viridian-ink: #2F6655; --viridian-soft: #E3EFEA;
+  --warn-soft: #FFF4D6; --warn-ink: #7A5600;
+  --code-bg: #F0F4F2; --c-comment: #6B7A75; --c-string: #A23B72; --c-kw: #2F6655; --c-num: #9A5B00; --c-pp: #6A4BF0;
+  --f-display: "Bai Jamjuree", "Sukhumvit Set", "Thonburi", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans Thai", "Sukhumvit Set", "Thonburi", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0F1714; --surface: #16211D; --fg: #E6EEEA; --muted: #9DAEA8; --line: #2A3833;
+  --viridian: #5FA88C; --viridian-ink: #8CCBB2; --viridian-soft: #1C2E27;
+  --warn-soft: #3A3018; --warn-ink: #F2D27A;
+  --code-bg: #111B17; --c-comment: #7F928B; --c-string: #F08DBE; --c-kw: #8CCBB2; --c-num: #F2B66B; --c-pp: #A996FF;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0F1714; --surface: #16211D; --fg: #E6EEEA; --muted: #9DAEA8; --line: #2A3833;
+  --viridian: #5FA88C; --viridian-ink: #8CCBB2; --viridian-soft: #1C2E27;
+  --warn-soft: #3A3018; --warn-ink: #F2D27A;
+  --code-bg: #111B17; --c-comment: #7F928B; --c-string: #F08DBE; --c-kw: #8CCBB2; --c-num: #F2B66B; --c-pp: #A996FF;
+  color-scheme: dark }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 400 16px/1.7 var(--f-body); }
+.wrap { max-width: 920px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+a { color: var(--viridian-ink); }
+:focus-visible { outline: 2px solid var(--viridian); outline-offset: 2px; }
+
+header.top { background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .wrap { padding-block: 40px 28px; display: grid; gap: 14px; }
+.eyebrow { font: 600 12px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--viridian-ink); }
+h1 { font: 700 clamp(26px, 5vw, 40px)/1.25 var(--f-display); margin: 0; text-wrap: balance; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 14px; color: var(--muted); }
+.meta b { color: var(--fg); font-weight: 600; }
+.progress { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); }
+.progress .bar { flex: 1; max-width: 280px; height: 6px; border-radius: 3px; background: var(--viridian-soft); overflow: hidden; }
+.progress .bar i { display: block; height: 100%; width: 0; background: var(--viridian); transition: width .3s; }
+
+nav.toc { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+nav.toc .wrap { display: flex; gap: 4px; overflow-x: auto; padding-block: 8px; scrollbar-width: none; }
+nav.toc a { flex: none; text-decoration: none; color: var(--muted); font-size: 14px; padding: 6px 10px; border-radius: 8px; white-space: nowrap; }
+nav.toc a:hover, nav.toc a.here { background: var(--viridian-soft); color: var(--viridian-ink); }
+nav.toc a span { font-family: var(--f-mono); color: var(--viridian); margin-right: 6px; }
+nav.toc a.done span::after { content: "✓"; margin-left: 2px; }
+
+main .wrap { padding-block: 8px 64px; }
+section { padding-top: 44px; scroll-margin-top: 56px; }
+section + section { border-top: 1px solid var(--line); margin-top: 32px; }
+h2 { font: 700 26px/1.3 var(--f-display); margin: 0 0 16px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; text-wrap: balance; }
+h2 .n { font: 600 15px/1 var(--f-mono); color: var(--viridian); border: 1.5px solid var(--viridian); border-radius: 6px; padding: 5px 7px; }
+h2 .t { flex: 1 1 300px; }
+h2 code { font-size: .8em; }
+.done { font: 500 14px/1 var(--f-body); color: var(--muted); display: inline-flex; gap: 6px; align-items: center; cursor: pointer; white-space: nowrap; }
+.done input { accent-color: var(--viridian); width: 16px; height: 16px; }
+h3 { font: 600 19px/1.4 var(--f-display); margin: 28px 0 10px; }
+h4 { font: 600 16px/1.4 var(--f-display); margin: 20px 0 8px; }
+p { margin: 0 0 12px; max-width: 70ch; }
+ul, ol { margin: 0 0 12px; padding-left: 22px; max-width: 72ch; }
+li { margin: 4px 0; }
+li > .snip, li > .tbl { margin-top: 8px; }
+strong { font-weight: 600; }
+code { font: 400 .88em var(--f-mono); background: var(--viridian-soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+
+.note { background: var(--warn-soft); color: var(--warn-ink); border-radius: 10px; padding: 12px 16px; font-size: 15px; margin: 14px 0; max-width: 72ch; }
+.note code { background: color-mix(in srgb, var(--warn-ink) 12%, transparent); }
+
+.tbl { overflow-x: auto; margin: 10px 0 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; line-height: 1.55; }
+th, td { text-align: left; vertical-align: top; padding: 9px 14px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font: 600 12px/1.4 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+@media (min-width: 700px) { td code { white-space: nowrap; } }
+
+pre { margin: 0; padding: 14px 16px; overflow-x: auto; font: 400 13.5px/1.6 var(--f-mono); tab-size: 2; }
+pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+.snip { position: relative; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; margin: 10px 0 16px; max-width: 100%; }
+.snip .lang { position: absolute; top: 8px; left: 14px; font: 600 11px/1 var(--f-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.snip .lang + .copy + pre { padding-top: 28px; }
+.snip .copy { position: absolute; top: 6px; right: 6px; }
+button { font: 500 13px/1 var(--f-body); color: var(--viridian-ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+button:hover { background: var(--viridian-soft); }
+
+.code { margin-top: 28px; }
+details.sketch { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; margin: 10px 0; }
+details.sketch summary { display: flex; gap: 12px; align-items: baseline; padding: 10px 14px; cursor: pointer; font-family: var(--f-mono); }
+details.sketch summary .fn { font-weight: 600; }
+details.sketch summary .ln { color: var(--muted); font-size: 13px; }
+details.sketch .bar { display: flex; gap: 6px; align-items: center; padding: 0 14px 8px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+details.sketch .bar a { font-size: 13px; margin-left: auto; }
+details.sketch pre { max-height: 640px; }
+.c { color: var(--c-comment); } .s { color: var(--c-string); } .k { color: var(--c-kw); font-weight: 600; } .n { color: var(--c-num); } .p { color: var(--c-pp); }
+
+footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+footer .wrap { padding-block: 20px 40px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">TGR2026 · C1 Embedded · ESP32 + Sensor</div>
+    <h1>Tutorial: Arduino + ESP32 บนบอร์ด IPST-WiFi (INEX)</h1>
+    <div class="meta">
+      <span><b>บอร์ด</b> INEX IPST-WiFi (TTGO T8 · ESP32)</span>
+      <span><b>เครื่องมือ</b> Arduino IDE 2 · ESP32 core 3.3.x</span>
+      <span><b>เป้าหมาย</b> ต่อเซ็นเซอร์ใหม่ + ส่ง MQTT ใน 30 นาที</span>
+    </div>
+    <div class="progress"><span id="prog-text">เรียนแล้ว 0 / 10 บท</span><div class="bar"><i id="prog-bar"></i></div></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="บทเรียน">
+  <div class="wrap">
+    <a href="#overview"><span>·</span>ภาพรวม</a>
+    <a href="#setup" data-lesson="setup"><span>0</span>ติดตั้ง</a>
+    <a href="#L01_gpio" data-lesson="L01_gpio"><span>1</span>GPIO</a>
+    <a href="#L02_pwm_buzzer" data-lesson="L02_pwm_buzzer"><span>2</span>PWM</a>
+    <a href="#L03_adc" data-lesson="L03_adc"><span>3</span>ADC</a>
+    <a href="#L04_oled" data-lesson="L04_oled"><span>4</span>OLED</a>
+    <a href="#L05_zx_sensors" data-lesson="L05_zx_sensors"><span>5</span>ZX sensors</a>
+    <a href="#L06_i2c_sensor" data-lesson="L06_i2c_sensor"><span>6</span>I2C</a>
+    <a href="#L07_wifi_ntp" data-lesson="L07_wifi_ntp"><span>7</span>Wi-Fi + NTP</a>
+    <a href="#L08_mqtt_json" data-lesson="L08_mqtt_json"><span>8</span>MQTT</a>
+    <a href="#L09_drying_controller" data-lesson="L09_drying_controller"><span>9</span>ตู้อบ</a>
+  </div>
+</nav>
+
+<main><div class="wrap">
+
+<section id="overview">
+<p>ชุดบทเรียนสำหรับ <strong>C1 — Embedded: ESP32 + Sensor</strong> ใน <a href="plan.html">TGR2026-Coach-Plan.md</a> ใช้บอร์ด IPST-WiFi ของ INEX ที่มีอยู่ เขียนด้วย Arduino (C/C++) เป้าหมายคือให้ทุกคนในทีมทำรายการใน Go / No-Go ได้: <strong>ต่อเซ็นเซอร์ใหม่ + ส่ง MQTT ภายใน 30 นาที</strong></p>
+<h3>ลำดับบทเรียน</h3>
+<div class="tbl"><table><thead><tr><th>บท</th><th>โฟลเดอร์</th><th>เรื่อง</th><th>เวลา</th><th>ผูกกับแผน</th></tr></thead><tbody><tr><td>0</td><td><a href="#setup">00-setup.md</a> · <code>L00_board_check</code></td><td>ติดตั้ง toolchain, อัปโหลดครั้งแรก, ตรวจบอร์ด</td><td>45 นาที</td><td>ศ. 23 ต.ค.</td></tr><tr><td>1</td><td><a href="#L01_gpio">L01_gpio</a></td><td>LED, ปุ่ม, debounce, <code>millis()</code> แบบไม่บล็อก</td><td>30 นาที</td><td>ศ. 23 ต.ค.</td></tr><tr><td>2</td><td><a href="#L02_pwm_buzzer">L02_pwm_buzzer</a></td><td>LEDC PWM, ปรับความสว่าง, เสียงแจ้งเตือน</td><td>30 นาที</td><td>ศ. 23 ต.ค.</td></tr><tr><td>3</td><td><a href="#L03_adc">L03_adc</a></td><td>ADC1, <code>analogReadMilliVolts()</code>, filter, Serial Plotter</td><td>45 นาที</td><td>ศ. 23 ต.ค.</td></tr><tr><td>4</td><td><a href="#L04_oled">L04_oled</a></td><td>จอ OLED I2C ด้วย U8g2</td><td>30 นาที</td><td>ศ. 23 ต.ค.</td></tr><tr><td>5</td><td><a href="#L05_zx_sensors">L05_zx_sensors</a></td><td>ZX-MCP9701 (อุณหภูมิ), ZX-SOIL (ความชื้น), ZX-SWITCH01, ZX-LED</td><td>60 นาที</td><td>ศ. 23 ต.ค. (sensor 2 ชนิด)</td></tr><tr><td>6</td><td><a href="#L06_i2c_sensor">L06_i2c_sensor</a></td><td>I2C scanner, อ่านเซ็นเซอร์จาก datasheet (SHT3x)</td><td>60 นาที</td><td>Phase 1</td></tr><tr><td>7</td><td><a href="#L07_wifi_ntp">L07_wifi_ntp</a></td><td>Wi-Fi + reconnect, NTP, เวลาแบบ ISO 8601</td><td>45 นาที</td><td>ส. 24 ต.ค.</td></tr><tr><td>8</td><td><a href="#L08_mqtt_json">L08_mqtt_json</a></td><td>MQTT + ArduinoJson, <code>lot_id</code> + <code>ts</code>, LWT, รับคำสั่ง</td><td>60 นาที</td><td>ส. 24 ต.ค.</td></tr><tr><td>9</td><td><a href="#L09_drying_controller">L09_drying_controller</a></td><td><strong>งานรวม:</strong> ตัวควบคุมการอบเมล็ดกาแฟ (hysteresis + PWM + แจ้งเตือน + MQTT + watchdog)</td><td>2–3 ชม.</td><td>Phase 1 (firmware template)</td></tr></tbody></table></div>
+<p>แต่ละบทมี <code>README.md</code> (อธิบาย + แบบฝึกหัด) และสเก็ตช์ <code>.ino</code> ที่คอมไพล์ผ่านแล้วกับ ESP32 Arduino core 3.3.x เปิดสเก็ตช์ใน Arduino IDE ด้วย <strong>File → Open</strong> แล้วเลือกไฟล์ <code>.ino</code> ในโฟลเดอร์นั้น</p>
+<h3>แผนผังบอร์ด IPST-WiFi</h3>
+<p>ที่มา: หน้าสินค้า <a href="https://inex.co.th/home/product/ipst-wifi-activity-kit/" target="_blank" rel="noopener">IPST-WiFi Activity Kit</a> และ <a href="https://inex.co.th/store/manual/ipstWiFi-ActivityKit_Info.pdf" target="_blank" rel="noopener">เอกสารประกอบชุด (PDF)</a> ของ INEX บอร์ดใช้โมดูล <strong>TTGO T8 V1.7</strong> (ESP32 dual-core, flash 4 MB, PSRAM 4 MB) ผ่านชิป USB-serial <strong>CP2104</strong></p>
+<div class="tbl"><table><thead><tr><th>ส่วน</th><th>GPIO</th><th>หมายเหตุ</th></tr></thead><tbody><tr><td>LED ทดสอบ (LED2)</td><td>18</td><td></td></tr><tr><td>ปุ่ม BUTTON (SW2)</td><td>0</td><td>มี pull-up 4.7k บนบอร์ด → กด = <code>LOW</code> · เป็น strapping pin: <strong>ห้ามกดค้างตอนรีเซ็ต</strong> (จะเข้าโหมดอัปโหลด)</td></tr><tr><td>ปุ่ม RESET (SW1)</td><td>EN</td><td></td></tr><tr><td>ลำโพง piezo (SP1)</td><td>26 *</td><td></td></tr><tr><td>พอร์ตเอาต์พุต analog/digital</td><td>25 *</td><td>DAC</td></tr><tr><td>ปุ่มหมุน KNOB (VR1)</td><td>36 (VP)</td><td>อ่าน analog, input-only *</td></tr><tr><td>OLED 0.96" 128×64</td><td>SDA 21, SCL 22</td><td>ชิป SSD1306 ที่แอดเดรส <code>0x3C</code> (ยืนยันด้วย I2C scanner ใน L00)</td></tr><tr><td>K2 พอร์ต I2C</td><td>SDA 21, SCL 22</td><td>ใช้บัสเดียวกับ OLED</td></tr><tr><td>K3 / K4 / K5</td><td>5 / 19 / 23</td><td>digital I/O (GPIO5 เป็น strapping pin แต่ใช้ได้ปกติ)</td></tr><tr><td>K7 / K8 / K9 / K10</td><td>32 / 33 / 34 / 35</td><td>analog in (INEX เรียก ADC4–ADC7) · เป็น <strong>ADC1 ทั้งหมด</strong> จึงใช้ได้ตอนเปิด Wi-Fi · 34, 35 เป็น input-only ไม่มี pull-up</td></tr><tr><td>microSD</td><td>CS 13, SCK 14, MOSI 15, MISO 2</td><td>GPIO2, 12, 15 เป็น strapping pin</td></tr><tr><td>LED RGB WS2812 ×3</td><td>ยังไม่ทราบ</td><td>ไม่ได้ใช้ในบทเรียนนี้</td></tr><tr><td>ไฟเลี้ยง</td><td></td><td>DC jack 5–9 V (adapter 6 V 2 A) หรือ microUSB หรือแบตเตอรี่ Li-Po 3.7 V · มีสวิตช์ไฟหลักและสวิตช์ไฟโมดูล ESP32</td></tr></tbody></table></div>
+<p>* <strong>ต้องยืนยันกับบอร์ดจริง:</strong> ข้อความของ INEX บอกว่าลำโพงอยู่ที่ GPIO26 และพอร์ตเอาต์พุตอยู่ที่ GPIO25 แต่ป้ายในวงจรของ PDF ดูเหมือนสลับกัน ส่วนปุ่มหมุนอ่านจากป้าย <code>KNOB-VP</code> ในวงจร สเก็ตช์ <code>L00_board_check</code> จะทดสอบให้รู้ว่าขาไหนคือขาไหน ถ้าผลต่างจากตารางให้แก้ค่าคงที่ที่หัวไฟล์ของทุกสเก็ตช์</p>
+<p>พอร์ต JST 3 ขา (S, +, GND) ใช้กับบอร์ด ZX ของ INEX ได้ทันที <strong>ทุกขาของ ESP32 เป็นลอจิก 3.3 V ห้ามป้อน 5 V เข้าขาสัญญาณ</strong></p>
+<h3>ไลบรารีที่ใช้</h3>
+<div class="tbl"><table><thead><tr><th>ไลบรารี</th><th>ใช้ในบท</th><th>ติดตั้งจาก Library Manager</th></tr></thead><tbody><tr><td>U8g2 (olikraus)</td><td>4, 5, 7, 9</td><td>ค้น <code>U8g2</code></td></tr><tr><td>ArduinoJson 7.x (Benoit Blanchon)</td><td>8, 9</td><td>ค้น <code>ArduinoJson</code></td></tr><tr><td>PubSubClient (Nick O'Leary)</td><td>8, 9</td><td>ค้น <code>PubSubClient</code></td></tr></tbody></table></div>
+<p><code>WiFi</code>, <code>Wire</code>, <code>esp_task_wdt</code> มาพร้อม ESP32 core</p>
+</section>
+
+<section id="setup" data-lesson="setup"><h2><span class="n">0</span><span class="t">ติดตั้ง toolchain และตรวจบอร์ด</span><label class="done"><input type="checkbox" data-done="setup"> เรียนแล้ว</label></h2><p>เป้าหมาย: ทุกเครื่องในทีมอัปโหลดโค้ดลงบอร์ด IPST-WiFi และเปิด Serial Monitor ได้ และรู้ว่าขาบนบอร์ดของเราตรงกับตารางใน <a href="#overview">README</a></p>
+<h3>1. ติดตั้งโปรแกรม</h3>
+<ol><li>ติดตั้ง <strong>Arduino IDE 2.x</strong> จาก <a href="https://www.arduino.cc/en/software" target="_blank" rel="noopener">https://www.arduino.cc/en/software</a></li><li>ติดตั้งไดรเวอร์ <strong>CP210x</strong> (บอร์ดใช้ชิป CP2104) จาก <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank" rel="noopener">https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers</a> — Windows 10/11 ส่วนใหญ่ติดตั้งให้อัตโนมัติ macOS รุ่นใหม่ก็มีให้แล้ว</li><li>เปิด Arduino IDE → <strong>File → Preferences</strong> → ช่อง *Additional boards manager URLs* ใส่
+<div class="snip"><button class="copy" type="button">คัดลอก</button><pre><code>https://espressif.github.io/arduino-esp32/package_esp32_index.json</code></pre></div></li><li><strong>Tools → Board → Boards Manager</strong> ค้น <code>esp32</code> แล้วติดตั้ง <strong>esp32 by Espressif Systems</strong> รุ่น 3.x (บทเรียนนี้ทดสอบกับ 3.3.12)</li><li><strong>Tools → Manage Libraries</strong> ติดตั้ง <code>U8g2</code>, <code>ArduinoJson</code> (7.x), <code>PubSubClient</code></li></ol>
+<div class="note"><strong>Offline-first:</strong> ก่อนออกเดินทาง ให้ทุกเครื่องเปิดและคอมไพล์ทุกสเก็ตช์ในโฟลเดอร์นี้ครั้งหนึ่ง เพื่อให้ core และไลบรารีอยู่ในเครื่องครบ แล้วสำรองโฟลเดอร์ <code>Arduino15</code> และ <code>Documents/Arduino/libraries</code> ลง USB</div>
+<h3>2. ตั้งค่าบอร์ด</h3>
+<p>ต่อสาย microUSB เปิดสวิตช์ไฟหลักและสวิตช์ไฟ ESP32 บนบอร์ด แล้วตั้งค่าใน <strong>Tools</strong>:</p>
+<div class="tbl"><table><thead><tr><th>ตัวเลือก</th><th>ค่า</th></tr></thead><tbody><tr><td>Board</td><td><strong>ESP32 Dev Module</strong></td></tr><tr><td>Port</td><td>COM ที่ขึ้นเมื่อเสียบบอร์ด (Windows) หรือ <code>/dev/cu.SLAB_USBtoUART</code> / <code>/dev/cu.usbserial-*</code> (macOS)</td></tr><tr><td>PSRAM</td><td>Enabled (ถ้าจะใช้ PSRAM 4 MB)</td></tr><tr><td>Upload Speed</td><td>921600 (ถ้าอัปโหลดไม่ผ่านให้ลด 460800 หรือ 115200)</td></tr></tbody></table></div>
+<p>ถ้าไม่เห็นพอร์ต: เปลี่ยนสาย USB (สายชาร์จอย่างเดียวส่งข้อมูลไม่ได้), ตรวจไดรเวอร์ CP210x, ตรวจว่าเปิดสวิตช์ไฟโมดูล ESP32 แล้ว</p>
+<p>ถ้าอัปโหลดขึ้น <code>Failed to connect to ESP32</code>: กดปุ่ม <strong>BUTTON (GPIO0) ค้าง</strong> แล้วกด <strong>RESET</strong> หนึ่งครั้ง ปล่อย BUTTON แล้วอัปโหลดใหม่</p>
+<h3>3. อัปโหลดสเก็ตช์ตรวจบอร์ด</h3>
+<p>เปิด <a href="#code-setup">L00_board_check/L00_board_check.ino</a> อัปโหลด แล้วเปิด <strong>Serial Monitor</strong> ที่ 115200 baud (ถ้าไม่เห็นข้อความแรก ให้กด RESET บนบอร์ดหลังเปิด Serial Monitor)</p>
+<p>สเก็ตช์จะทำตามลำดับ:</p>
+<ol><li><strong>LED GPIO18</strong> ติด 1 วินาที — ถ้าไม่ติดแต่ดับแทน แสดงว่า LED ต่อแบบ active-low ให้จดไว้</li><li><strong>เสียงที่ 1</strong> ออกจาก GPIO26 แล้ว <strong>เสียงที่ 2</strong> ออกจาก GPIO25 — จดว่าลำโพงบนบอร์ดดังที่เสียงไหน</li><li><strong>สแกน I2C</strong> — ควรเจอ OLED ที่ <code>0x3C</code> (หรือ <code>0x3D</code>)</li><li>วนแสดง <strong>ค่าแรงดันของขา GPIO36</strong> และสถานะปุ่ม — หมุน KNOB บนบอร์ดแล้วค่าควรเปลี่ยน, กด BUTTON แล้ว LED ควรติด</li></ol>
+<h4>จดผลลงตารางนี้ (ทำครั้งเดียวต่อบอร์ด แล้วแชร์ให้ทีม)</h4>
+<div class="tbl"><table><thead><tr><th>รายการ</th><th>ค่าที่คาดไว้</th><th>ผลจริง</th></tr></thead><tbody><tr><td>LED ติดเมื่อเขียน <code>HIGH</code></td><td>ใช่</td><td></td></tr><tr><td>ลำโพงบนบอร์ดอยู่ที่</td><td>GPIO26 (เสียงที่ 1)</td><td></td></tr><tr><td>แอดเดรส OLED</td><td><code>0x3C</code></td><td></td></tr><tr><td>KNOB อยู่ที่ GPIO36</td><td>ใช่ (ค่าเปลี่ยนเมื่อหมุน)</td><td></td></tr></tbody></table></div>
+<p>ถ้าผลต่างจากที่คาดไว้ ให้แก้ <code>BUZZER_PIN</code>, <code>OUT_PIN</code>, <code>KNOB_PIN</code> หรือ <code>OLED</code> ที่หัวไฟล์ของสเก็ตช์บทถัดไป และแก้ตารางใน <a href="#overview">README</a> ด้วย</p>
+<h3>ข้อควรระวังของ ESP32</h3>
+<ul><li>ลอจิก <strong>3.3 V</strong> — ห้ามป้อน 5 V เข้าขาสัญญาณ</li><li><strong>Strapping pins</strong> 0, 2, 5, 12, 15 กำหนดโหมดตอนบูต: อย่าต่ออุปกรณ์ที่ดึงขาเหล่านี้ HIGH/LOW ค้างไว้ตอนรีเซ็ต (โดยเฉพาะ GPIO12 ต้องเป็น LOW ตอนบูต)</li><li><strong>GPIO34–39</strong> เป็น input อย่างเดียวและไม่มี pull-up/pull-down ภายใน</li><li><strong>ADC2</strong> (GPIO0, 2, 4, 12–15, 25–27) ใช้อ่าน analog ไม่ได้ขณะเปิด Wi-Fi — บอร์ดนี้ให้พอร์ต analog เป็น ADC1 (GPIO32–36) อยู่แล้ว</li></ul><div class="code" id="code-setup"><h3>โค้ด · <code>L00_board_check</code></h3><details class="sketch" open><summary><span class="fn">L00_board_check.ino</span><span class="ln">66 บรรทัด</span></summary><div class="bar"><button class="copy" type="button">คัดลอก</button><button class="dl" type="button" data-name="L00_board_check.ino">ดาวน์โหลด</button><a href="https://github.com/apisake/tgr2026-team-coach/tree/main/tutorial/L00_board_check" target="_blank" rel="noopener">GitHub</a></div><pre><code><span class="c">// L00 · ตรวจบอร์ด IPST-WiFi: LED, ลำโพง, I2C, ปุ่มหมุน, ปุ่มกด</span>
+<span class="c">// เปิด Serial Monitor ที่ 115200 แล้วจดผลตามตารางใน 00-setup.md</span>
+<span class="p">
+#include &lt;Wire.h&gt;</span>
+
+<span class="k">const</span> <span class="k">int</span> LED_PIN = <span class="n">18</span>;
+<span class="k">const</span> <span class="k">int</span> BUTTON_PIN = <span class="n">0</span>;   <span class="c">// กด = LOW</span>
+<span class="k">const</span> <span class="k">int</span> KNOB_PIN = <span class="n">36</span>;    <span class="c">// VP</span>
+<span class="k">const</span> <span class="k">int</span> SDA_PIN = <span class="n">21</span>;
+<span class="k">const</span> <span class="k">int</span> SCL_PIN = <span class="n">22</span>;
+<span class="k">const</span> <span class="k">int</span> BUZZER_CANDIDATES[] = {<span class="n">26</span>, <span class="n">25</span>};
+
+<span class="k">void</span> beep(<span class="k">int</span> pin, <span class="k">int</span> freq, <span class="k">int</span> ms) {
+  ledcAttach(pin, freq, <span class="n">8</span>);
+  ledcWrite(pin, <span class="n">128</span>);  <span class="c">// duty 50%</span>
+  delay(ms);
+  ledcWrite(pin, <span class="n">0</span>);
+  ledcDetach(pin);
+}
+
+<span class="k">void</span> scanI2C() {
+  <span class="k">int</span> found = <span class="n">0</span>;
+  <span class="k">for</span> (<span class="k">uint8_t</span> addr = <span class="n">1</span>; addr &lt; <span class="n">127</span>; addr++) {
+    Wire.beginTransmission(addr);
+    <span class="k">if</span> (Wire.endTransmission() == <span class="n">0</span>) {
+      Serial.printf(<span class="s">&quot;  พบอุปกรณ์ที่ 0x%02X\n&quot;</span>, addr);
+      found++;
+    }
+  }
+  <span class="k">if</span> (found == <span class="n">0</span>) Serial.println(<span class="s">&quot;  ไม่พบอุปกรณ์ I2C&quot;</span>);
+}
+
+<span class="k">void</span> setup() {
+  Serial.begin(<span class="n">115200</span>);
+  delay(<span class="n">1000</span>);
+  Serial.println(<span class="s">&quot;\n=== IPST-WiFi board check ===&quot;</span>);
+
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT);  <span class="c">// มี pull-up บนบอร์ดแล้ว</span>
+
+  Serial.println(<span class="s">&quot;[1] LED GPIO18 = HIGH 1 วินาที (ติดหรือไม่?)&quot;</span>);
+  digitalWrite(LED_PIN, HIGH);
+  delay(<span class="n">1000</span>);
+  digitalWrite(LED_PIN, LOW);
+
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">2</span>; i++) {
+    <span class="k">int</span> pin = BUZZER_CANDIDATES[i];
+    Serial.printf(<span class="s">&quot;[2.%d] เสียงที่ %d จาก GPIO%d\n&quot;</span>, i + <span class="n">1</span>, i + <span class="n">1</span>, pin);
+    beep(pin, <span class="n">2000</span>, <span class="n">400</span>);
+    delay(<span class="n">800</span>);
+  }
+
+  Serial.println(<span class="s">&quot;[3] สแกน I2C (SDA 21, SCL 22)&quot;</span>);
+  Wire.begin(SDA_PIN, SCL_PIN);
+  scanI2C();
+
+  Serial.println(<span class="s">&quot;[4] หมุน KNOB และกด BUTTON — ค่าจะแสดงทุก 0.3 วินาที&quot;</span>);
+}
+
+<span class="k">void</span> loop() {
+  <span class="k">int</span> mv = analogReadMilliVolts(KNOB_PIN);
+  <span class="k">bool</span> pressed = digitalRead(BUTTON_PIN) == LOW;
+  digitalWrite(LED_PIN, pressed ? HIGH : LOW);
+  Serial.printf(<span class="s">&quot;knob(GPIO%d) = %4d mV   button = %s\n&quot;</span>, KNOB_PIN, mv, pressed ? <span class="s">&quot;กด&quot;</span> : <span class="s">&quot;-&quot;</span>);
+  delay(<span class="n">300</span>);
+}</code></pre></details></div></section>
+
+<section id="L01_gpio" data-lesson="L01_gpio"><h2><span class="n">1</span><span class="t">GPIO: LED, ปุ่ม และ <code>millis()</code></span><label class="done"><input type="checkbox" data-done="L01_gpio"> เรียนแล้ว</label></h2><h3>เรียนอะไร</h3>
+<ul><li><code>pinMode()</code>, <code>digitalWrite()</code>, <code>digitalRead()</code></li><li><strong>ทำไมไม่ใช้ <code>delay()</code></strong>: ระหว่าง <code>delay(500)</code> ESP32 ทำอย่างอื่นไม่ได้เลย ทั้งอ่านปุ่ม อ่านเซ็นเซอร์ และรักษาการเชื่อมต่อ MQTT ในบทหลัง ๆ จึงใช้รูปแบบนี้แทน
+<div class="snip"><span class="lang">C++</span><button class="copy" type="button">คัดลอก</button><pre><code><span class="k">if</span> (millis() - lastTime &gt;= INTERVAL) {
+  lastTime = millis();
+  <span class="c">// ทำงานตามรอบ</span>
+}</code></pre></div>
+<p>การลบแบบ <code>millis() - lastTime</code> ยังถูกต้องแม้ <code>millis()</code> วนกลับเป็น 0 (ทุก ~49 วัน)</p></li><li><strong>Debounce</strong>: หน้าสัมผัสปุ่มเด้งหลายครั้งในไม่กี่มิลลิวินาที จึงต้องรอให้ค่านิ่ง (30 ms) ก่อนเชื่อ</li><li><strong>Edge detection</strong>: สนใจ "จังหวะที่เปลี่ยนเป็นกด" ไม่ใช่ "กำลังกดอยู่" — ฟังก์ชัน <code>buttonPressed()</code> คืน <code>true</code> ครั้งเดียวต่อการกด</li></ul>
+<h3>ฮาร์ดแวร์</h3>
+<p>ใช้ของบนบอร์ดอย่างเดียว: LED GPIO18 และปุ่ม BUTTON GPIO0 (GPIO0 มีตัวต้านทาน pull-up บนบอร์ดแล้ว จึงใช้ <code>INPUT</code> ได้ ถ้าใช้ปุ่มภายนอกบนพอร์ต K3 GPIO5 ให้ใช้ <code>INPUT_PULLUP</code>)</p>
+<h3>ลองทำ</h3>
+<p>อัปโหลด <a href="#code-L01_gpio">L01_gpio.ino</a> แล้วกด BUTTON — LED จะสลับระหว่างกระพริบช้า เร็ว และดับ</p>
+<h3>แบบฝึกหัด</h3>
+<ol><li>เพิ่มโหมดที่ 4 "ติดค้าง"</li><li><strong>กดค้าง 2 วินาที</strong> ให้กลับไปโหมดแรก (ใบ้: จำเวลาที่เริ่มกดไว้)</li><li>ต่อ ZX-SWITCH01 ที่พอร์ต K3 (GPIO5) และ ZX-LED ที่ K5 (GPIO23) ให้ปุ่มภายนอกควบคุม LED ภายนอกแยกจากปุ่มบนบอร์ด — ทั้งสองคู่ต้องทำงานพร้อมกันได้โดยไม่รอกัน</li><li>คิดต่อกับโจทย์: ถ้าเกษตรกรกดปุ่มเพื่อ "เริ่มล็อตใหม่" ควรใช้กดสั้นหรือกดค้าง เพราะอะไร</li></ol><div class="code" id="code-L01_gpio"><h3>โค้ด · <code>L01_gpio</code></h3><details class="sketch" open><summary><span class="fn">L01_gpio.ino</span><span class="ln">55 บรรทัด</span></summary><div class="bar"><button class="copy" type="button">คัดลอก</button><button class="dl" type="button" data-name="L01_gpio.ino">ดาวน์โหลด</button><a href="https://github.com/apisake/tgr2026-team-coach/tree/main/tutorial/L01_gpio" target="_blank" rel="noopener">GitHub</a></div><pre><code><span class="c">// L01 · GPIO: LED กระพริบแบบไม่บล็อก + ปุ่มกดพร้อม debounce</span>
+<span class="c">// กด BUTTON เพื่อสลับโหมด: กระพริบช้า → กระพริบเร็ว → ดับ</span>
+
+<span class="k">const</span> <span class="k">int</span> LED_PIN = <span class="n">18</span>;
+<span class="k">const</span> <span class="k">int</span> BUTTON_PIN = <span class="n">0</span>;  <span class="c">// กด = LOW (pull-up บนบอร์ด)</span>
+
+<span class="k">const</span> <span class="k">unsigned</span> <span class="k">long</span> DEBOUNCE_MS = <span class="n">30</span>;
+<span class="k">const</span> <span class="k">unsigned</span> <span class="k">long</span> BLINK_MS[] = {<span class="n">500</span>, <span class="n">100</span>, <span class="n">0</span>};  <span class="c">// 0 = ดับ</span>
+<span class="k">const</span> <span class="k">char</span> *MODE_NAME[] = {<span class="s">&quot;ช้า&quot;</span>, <span class="s">&quot;เร็ว&quot;</span>, <span class="s">&quot;ดับ&quot;</span>};
+
+<span class="k">int</span> mode = <span class="n">0</span>;
+<span class="k">bool</span> ledOn = <span class="k">false</span>;
+<span class="k">unsigned</span> <span class="k">long</span> lastBlink = <span class="n">0</span>;
+
+<span class="c">// สถานะปุ่มสำหรับ debounce</span>
+<span class="k">bool</span> stableState = HIGH;
+<span class="k">bool</span> lastReading = HIGH;
+<span class="k">unsigned</span> <span class="k">long</span> lastChange = <span class="n">0</span>;
+
+<span class="c">// คืนค่า true ครั้งเดียวต่อการกดหนึ่งครั้ง</span>
+<span class="k">bool</span> buttonPressed() {
+  <span class="k">bool</span> reading = digitalRead(BUTTON_PIN);
+  <span class="k">if</span> (reading != lastReading) {
+    lastChange = millis();
+    lastReading = reading;
+  }
+  <span class="k">if</span> (millis() - lastChange &gt; DEBOUNCE_MS &amp;&amp; reading != stableState) {
+    stableState = reading;
+    <span class="k">return</span> stableState == LOW;
+  }
+  <span class="k">return</span> <span class="k">false</span>;
+}
+
+<span class="k">void</span> setup() {
+  Serial.begin(<span class="n">115200</span>);
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT);
+  Serial.println(<span class="s">&quot;L01 GPIO — กด BUTTON เพื่อเปลี่ยนโหมด&quot;</span>);
+}
+
+<span class="k">void</span> loop() {
+  <span class="k">if</span> (buttonPressed()) {
+    mode = (mode + <span class="n">1</span>) % <span class="n">3</span>;
+    Serial.printf(<span class="s">&quot;โหมด: %s\n&quot;</span>, MODE_NAME[mode]);
+  }
+
+  <span class="k">unsigned</span> <span class="k">long</span> now = millis();
+  <span class="k">if</span> (BLINK_MS[mode] == <span class="n">0</span>) {
+    ledOn = <span class="k">false</span>;
+  } <span class="k">else</span> <span class="k">if</span> (now - lastBlink &gt;= BLINK_MS[mode]) {
+    lastBlink = now;
+    ledOn = !ledOn;
+  }
+  digitalWrite(LED_PIN, ledOn ? HIGH : LOW);
+}</code></pre></details></div></section>
+
+<section id="L02_pwm_buzzer" data-lesson="L02_pwm_buzzer"><h2><span class="n">2</span><span class="t">PWM (LEDC): หรี่ไฟและเสียงแจ้งเตือน</span><label class="done"><input type="checkbox" data-done="L02_pwm_buzzer"> เรียนแล้ว</label></h2><h3>เรียนอะไร</h3>
+<ul><li><strong>PWM</strong> คือการเปิด-ปิดขาเร็ว ๆ แล้วปรับสัดส่วนเวลาที่เปิด (duty cycle) — ใช้ปรับความสว่าง LED, ความเร็วพัดลมผ่าน MOSFET, มุม servo และสร้างเสียง</li><li>ESP32 มีวงจร PWM ชื่อ <strong>LEDC</strong> ใน core 3.x ใช้แค่ 3 ฟังก์ชัน:
+<div class="tbl"><table><thead><tr><th>ฟังก์ชัน</th><th>ใช้ทำอะไร</th></tr></thead><tbody><tr><td><code>ledcAttach(pin, freq, bits)</code></td><td>ผูกขากับ PWM เช่น 5000 Hz, 8 บิต (duty 0–255)</td></tr><tr><td><code>ledcWrite(pin, duty)</code></td><td>ตั้ง duty</td></tr><tr><td><code>ledcWriteTone(pin, freq)</code></td><td>เล่นเสียงความถี่ <code>freq</code> (0 = เงียบ)</td></tr></tbody></table></div>
+<div class="note">ตัวอย่างบนอินเทอร์เน็ตจำนวนมากยังใช้ API ของ core 2.x (<code>ledcSetup</code> + <code>ledcAttachPin</code> + เลข channel) ซึ่งคอมไพล์ไม่ผ่านบน core 3.x</div></li><li><strong>ตัวเล่นเสียงแบบไม่บล็อก</strong>: เก็บ "กำลังเล่นโน้ตที่เท่าไร ดังอยู่หรือเงียบอยู่ เริ่มเมื่อไร" แล้วให้ <code>loop()</code> เรียก <code>updateAlarm()</code> ทุกรอบ — ไฟยังหรี่ได้ต่อเนื่องระหว่างมีเสียง</li></ul>
+<h3>ฮาร์ดแวร์</h3>
+<ul><li>LED บนบอร์ด GPIO18, ลำโพงบนบอร์ด GPIO26 (ตามผล L00)</li><li>ถ้ามี ZX-LED ให้ต่อพอร์ต K4 (GPIO19) — จะหรี่สลับกับ LED บนบอร์ด</li></ul>
+<h3>ลองทำ</h3>
+<p>อัปโหลด <a href="#code-L02_pwm_buzzer">L02_pwm_buzzer.ino</a> — LED หรี่ขึ้นลงตลอด กด BUTTON แล้วได้ยินเสียงแจ้งเตือน 3 ครั้งโดยไฟไม่สะดุด</p>
+<h3>แบบฝึกหัด</h3>
+<ol><li>สร้างรูปแบบเสียงที่สอง <code>OK</code> (เสียงต่ำ-สูง สั้น ๆ) สำหรับ "บันทึกข้อมูลสำเร็จ"</li><li>ปรับ <code>PWM_BITS</code> เป็น 10 แล้วแก้ <code>map()</code> ให้ duty ไปถึง 1023 — สังเกตว่าหรี่ได้เนียนขึ้นที่ความสว่างต่ำหรือไม่</li><li>ให้ ZX-LED แทน "พัดลม" ที่มี 4 ระดับ (ปิด 25% 50% 100%) กด BUTTON เพื่อเปลี่ยนระดับ</li><li>คิดต่อกับโจทย์: ตู้อบที่ใช้พัดลม DC 12 V ต้องใช้อุปกรณ์อะไรคั่นระหว่าง GPIO กับพัดลม (ใบ้: MOSFET แบบ logic-level + ไดโอด flyback) และควรใช้ความถี่ PWM เท่าไรเพื่อไม่ให้มีเสียงหอน</li></ol><div class="code" id="code-L02_pwm_buzzer"><h3>โค้ด · <code>L02_pwm_buzzer</code></h3><details class="sketch" open><summary><span class="fn">L02_pwm_buzzer.ino</span><span class="ln">76 บรรทัด</span></summary><div class="bar"><button class="copy" type="button">คัดลอก</button><button class="dl" type="button" data-name="L02_pwm_buzzer.ino">ดาวน์โหลด</button><a href="https://github.com/apisake/tgr2026-team-coach/tree/main/tutorial/L02_pwm_buzzer" target="_blank" rel="noopener">GitHub</a></div><pre><code><span class="c">// L02 · PWM ด้วย LEDC: หรี่ไฟ LED และเสียงแจ้งเตือนจาก piezo</span>
+<span class="c">// ใช้ API ของ ESP32 Arduino core 3.x: ledcAttach / ledcWrite / ledcWriteTone</span>
+
+<span class="k">const</span> <span class="k">int</span> LED_PIN = <span class="n">18</span>;
+<span class="k">const</span> <span class="k">int</span> EXT_LED_PIN = <span class="n">19</span>;  <span class="c">// ZX-LED ที่พอร์ต K4 (ถ้ามี)</span>
+<span class="k">const</span> <span class="k">int</span> BUZZER_PIN = <span class="n">26</span>;   <span class="c">// ยืนยันด้วย L00 ก่อน</span>
+<span class="k">const</span> <span class="k">int</span> BUTTON_PIN = <span class="n">0</span>;
+
+<span class="k">const</span> <span class="k">int</span> PWM_FREQ = <span class="n">5000</span>;  <span class="c">// Hz</span>
+<span class="k">const</span> <span class="k">int</span> PWM_BITS = <span class="n">8</span>;     <span class="c">// duty 0–255</span>
+
+<span class="c">// รูปแบบเสียง: ความถี่ (Hz), เวลาดัง (ms), เวลาเงียบ (ms)</span>
+<span class="k">struct</span> Tone { <span class="k">int</span> freq; <span class="k">int</span> onMs; <span class="k">int</span> offMs; };
+<span class="k">const</span> Tone ALARM[] = {{<span class="n">2500</span>, <span class="n">150</span>, <span class="n">100</span>}, {<span class="n">2500</span>, <span class="n">150</span>, <span class="n">100</span>}, {<span class="n">2500</span>, <span class="n">150</span>, <span class="n">600</span>}};
+<span class="k">const</span> <span class="k">int</span> ALARM_LEN = <span class="k">sizeof</span>(ALARM) / <span class="k">sizeof</span>(ALARM[<span class="n">0</span>]);
+
+<span class="c">// ตัวเล่นเสียงแบบไม่บล็อก</span>
+<span class="k">int</span> toneIndex = -<span class="n">1</span>;  <span class="c">// -1 = ไม่ได้เล่น</span>
+<span class="k">bool</span> toneOn = <span class="k">false</span>;
+<span class="k">unsigned</span> <span class="k">long</span> toneSince = <span class="n">0</span>;
+
+<span class="k">void</span> startAlarm() {
+  toneIndex = <span class="n">0</span>;
+  toneOn = <span class="k">true</span>;
+  toneSince = millis();
+  ledcWriteTone(BUZZER_PIN, ALARM[<span class="n">0</span>].freq);
+}
+
+<span class="k">void</span> updateAlarm() {
+  <span class="k">if</span> (toneIndex &lt; <span class="n">0</span>) <span class="k">return</span>;
+  <span class="k">const</span> Tone &amp;t = ALARM[toneIndex];
+  <span class="k">unsigned</span> <span class="k">long</span> elapsed = millis() - toneSince;
+  <span class="k">if</span> (toneOn &amp;&amp; elapsed &gt;= (<span class="k">unsigned</span> <span class="k">long</span>)t.onMs) {
+    ledcWriteTone(BUZZER_PIN, <span class="n">0</span>);  <span class="c">// ความถี่ 0 = เงียบ</span>
+    toneOn = <span class="k">false</span>;
+    toneSince = millis();
+  } <span class="k">else</span> <span class="k">if</span> (!toneOn &amp;&amp; elapsed &gt;= (<span class="k">unsigned</span> <span class="k">long</span>)t.offMs) {
+    toneIndex++;
+    <span class="k">if</span> (toneIndex &gt;= ALARM_LEN) {
+      toneIndex = -<span class="n">1</span>;
+      <span class="k">return</span>;
+    }
+    ledcWriteTone(BUZZER_PIN, ALARM[toneIndex].freq);
+    toneOn = <span class="k">true</span>;
+    toneSince = millis();
+  }
+}
+
+<span class="c">// หรี่ไฟขึ้นลงแบบสามเหลี่ยม คาบ 2 วินาที</span>
+<span class="k">int</span> fadeDuty() {
+  <span class="k">unsigned</span> <span class="k">long</span> phase = millis() % <span class="n">2000</span>;
+  <span class="k">int</span> d = phase &lt; <span class="n">1000</span> ? phase : <span class="n">2000</span> - phase;  <span class="c">// 0..1000..0</span>
+  <span class="k">return</span> map(d, <span class="n">0</span>, <span class="n">1000</span>, <span class="n">0</span>, <span class="n">255</span>);
+}
+
+<span class="k">void</span> setup() {
+  Serial.begin(<span class="n">115200</span>);
+  pinMode(BUTTON_PIN, INPUT);
+  ledcAttach(LED_PIN, PWM_FREQ, PWM_BITS);
+  ledcAttach(EXT_LED_PIN, PWM_FREQ, PWM_BITS);
+  ledcAttach(BUZZER_PIN, <span class="n">2000</span>, PWM_BITS);
+  Serial.println(<span class="s">&quot;L02 PWM — กด BUTTON เพื่อเล่นเสียงแจ้งเตือน&quot;</span>);
+}
+
+<span class="k">void</span> loop() {
+  <span class="k">int</span> duty = fadeDuty();
+  ledcWrite(LED_PIN, duty);
+  ledcWrite(EXT_LED_PIN, <span class="n">255</span> - duty);
+
+  <span class="k">static</span> <span class="k">bool</span> lastBtn = HIGH;
+  <span class="k">bool</span> btn = digitalRead(BUTTON_PIN);
+  <span class="k">if</span> (lastBtn == HIGH &amp;&amp; btn == LOW &amp;&amp; toneIndex &lt; <span class="n">0</span>) startAlarm();
+  lastBtn = btn;
+
+  updateAlarm();
+}</code></pre></details></div></section>
+
+<section id="L03_adc" data-lesson="L03_adc"><h2><span class="n">3</span><span class="t">ADC: อ่านแรงดันให้แม่นและนิ่ง</span><label class="done"><input type="checkbox" data-done="L03_adc"> เรียนแล้ว</label></h2><h3>เรียนอะไร</h3>
+<ul><li>ESP32 มี ADC 12 บิต (0–4095) สองชุด: <strong>ADC1</strong> (GPIO32–39) และ <strong>ADC2</strong> — ADC2 ใช้ไม่ได้ขณะเปิด Wi-Fi บอร์ด IPST-WiFi ให้พอร์ต analog K7–K10 (GPIO32–35) และ KNOB (GPIO36) อยู่บน ADC1 ทั้งหมด</li><li><strong>Attenuation</strong> กำหนดช่วงแรงดันที่วัดได้ ค่าเริ่มต้น <code>ADC_11db</code> วัดได้ราว 0.15–3.1 V และไม่เป็นเชิงเส้นที่ปลายทั้งสองข้าง</li><li><code>analogRead()</code> คืนค่าดิบซึ่งแต่ละชิปเพี้ยนต่างกัน ส่วน <strong><code>analogReadMilliVolts()</code></strong> ใช้ค่า calibration ที่โรงงานเขียนไว้ใน eFuse จึงได้ mV ที่ใกล้ความจริงกว่า — <strong>ใช้ตัวนี้เสมอเมื่อต้องแปลงเป็นหน่วยจริง</strong></li><li>ADC ของ ESP32 มี noise ราว ±10–30 mV จึงต้องกรอง:
+<ul><li><strong>Median filter</strong> ตัดค่ากระโดด (spike) ทิ้ง — เรียงค่า 9 ค่าล่าสุดแล้วเอาตัวกลาง</li><li><strong>EMA</strong> (exponential moving average) <code>ema = α·x + (1−α)·ema</code> ทำให้เส้นเรียบ ใช้หน่วยความจำค่าเดียว</li></ul></li><li>Serial Plotter ของ Arduino IDE 2.x อ่านรูปแบบ <code>label:value,label:value</code> และวาดกราฟหลายเส้นได้</li></ul>
+<h3>ฮาร์ดแวร์</h3>
+<ul><li>KNOB บนบอร์ด (GPIO36)</li><li>ZX-POT ที่พอร์ต K7 (GPIO32) ถ้ามี</li></ul>
+<h3>ลองทำ</h3>
+<p>อัปโหลด <a href="#code-L03_adc">L03_adc.ino</a> แล้วเปิด <strong>Tools → Serial Plotter</strong> หมุน KNOB ช้า ๆ เปรียบเทียบเส้น <code>mv</code> (มี noise), <code>median</code> (ไม่มี spike) และ <code>ema</code> (เรียบแต่ตามช้ากว่า) <code>raw_x0.8</code> คือค่าดิบคูณ 0.8 ให้อยู่ในสเกลใกล้เคียงกันเพื่อดูความต่างระหว่างค่าดิบกับค่าที่ calibrate แล้ว</p>
+<h3>แบบฝึกหัด</h3>
+<ol><li>ปรับ <code>EMA_ALPHA</code> เป็น 0.02 และ 0.5 — อธิบายว่าแลกอะไรกับอะไร ถ้าเป็นเซ็นเซอร์อุณหภูมิตู้อบควรเลือกค่าไหน</li><li>หมุน KNOB ไปสุดทั้งสองข้าง ค่า mV ต่ำสุดและสูงสุดเท่าไร ตรงกับ 0 และ 3300 mV หรือไม่ ทำไม</li><li>ลองเปลี่ยนเป็น <code>ADC_0db</code> แล้วหมุน KNOB — ค่าอิ่มตัวที่เท่าไร เหมาะกับเซ็นเซอร์แบบไหน</li><li>เขียนฟังก์ชัน <code>int readMv(int pin, int n)</code> ที่อ่าน <code>n</code> ครั้งแล้วคืน median เพื่อใช้ซ้ำในบทถัดไป</li></ol><div class="code" id="code-L03_adc"><h3>โค้ด · <code>L03_adc</code></h3><details class="sketch" open><summary><span class="fn">L03_adc.ino</span><span class="ln">54 บรรทัด</span></summary><div class="bar"><button class="copy" type="button">คัดลอก</button><button class="dl" type="button" data-name="L03_adc.ino">ดาวน์โหลด</button><a href="https://github.com/apisake/tgr2026-team-coach/tree/main/tutorial/L03_adc" target="_blank" rel="noopener">GitHub</a></div><pre><code><span class="c">// L03 · ADC: อ่านแรงดันจาก KNOB และ ZX-POT แล้วกรองสัญญาณ</span>
+<span class="c">// เปิด Tools → Serial Plotter (115200) เพื่อดูกราฟ raw / median / ema</span>
+
+<span class="k">const</span> <span class="k">int</span> KNOB_PIN = <span class="n">36</span>;  <span class="c">// KNOB บนบอร์ด (VP)</span>
+<span class="k">const</span> <span class="k">int</span> POT_PIN = <span class="n">32</span>;   <span class="c">// ZX-POT ที่พอร์ต K7</span>
+
+<span class="k">const</span> <span class="k">int</span> SAMPLE_MS = <span class="n">20</span>;    <span class="c">// อ่านทุก 20 ms (50 ครั้ง/วินาที)</span>
+<span class="k">const</span> <span class="k">int</span> MEDIAN_N = <span class="n">9</span>;      <span class="c">// จำนวนค่าใน median filter (เลขคี่)</span>
+<span class="k">const</span> <span class="k">float</span> EMA_ALPHA = <span class="n">0.1</span>; <span class="c">// 0..1 ยิ่งน้อยยิ่งเรียบแต่ตอบสนองช้า</span>
+
+<span class="k">int</span> window[MEDIAN_N];
+<span class="k">int</span> windowPos = <span class="n">0</span>;
+<span class="k">float</span> ema = -<span class="n">1</span>;
+
+<span class="k">int</span> median(<span class="k">const</span> <span class="k">int</span> *data, <span class="k">int</span> n) {
+  <span class="k">int</span> sorted[MEDIAN_N];
+  memcpy(sorted, data, n * <span class="k">sizeof</span>(<span class="k">int</span>));
+  <span class="c">// insertion sort พอสำหรับ n เล็ก</span>
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n; i++) {
+    <span class="k">int</span> v = sorted[i], j = i - <span class="n">1</span>;
+    <span class="k">while</span> (j &gt;= <span class="n">0</span> &amp;&amp; sorted[j] &gt; v) { sorted[j + <span class="n">1</span>] = sorted[j]; j--; }
+    sorted[j + <span class="n">1</span>] = v;
+  }
+  <span class="k">return</span> sorted[n / <span class="n">2</span>];
+}
+
+<span class="k">void</span> setup() {
+  Serial.begin(<span class="n">115200</span>);
+  analogReadResolution(<span class="n">12</span>);                     <span class="c">// 0–4095</span>
+  analogSetPinAttenuation(KNOB_PIN, ADC_11db);  <span class="c">// ช่วงวัดประมาณ 0–3.1 V</span>
+  analogSetPinAttenuation(POT_PIN, ADC_11db);
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; MEDIAN_N; i++) window[i] = analogReadMilliVolts(KNOB_PIN);
+}
+
+<span class="k">void</span> loop() {
+  <span class="k">static</span> <span class="k">unsigned</span> <span class="k">long</span> last = <span class="n">0</span>;
+  <span class="k">if</span> (millis() - last &lt; SAMPLE_MS) <span class="k">return</span>;
+  last = millis();
+
+  <span class="k">int</span> raw = analogRead(KNOB_PIN);          <span class="c">// ค่าดิบ 0–4095 (ไม่ได้ calibrate)</span>
+  <span class="k">int</span> mv = analogReadMilliVolts(KNOB_PIN); <span class="c">// mV ที่ผ่าน calibration จาก eFuse</span>
+
+  window[windowPos] = mv;
+  windowPos = (windowPos + <span class="n">1</span>) % MEDIAN_N;
+  <span class="k">int</span> med = median(window, MEDIAN_N);
+
+  ema = (ema &lt; <span class="n">0</span>) ? med : EMA_ALPHA * med + (<span class="n">1</span> - EMA_ALPHA) * ema;
+
+  <span class="k">int</span> potMv = analogReadMilliVolts(POT_PIN);
+
+  <span class="c">// รูปแบบ label:value ที่ Serial Plotter ของ IDE 2.x อ่านได้</span>
+  Serial.printf(<span class="s">&quot;raw_x0.8:%d,mv:%d,median:%d,ema:%.0f,pot_mv:%d\n&quot;</span>,
+                (<span class="k">int</span>)(raw * <span class="n">0.8</span>), mv, med, ema, potMv);
+}</code></pre></details></div></section>
+
+<section id="L04_oled" data-lesson="L04_oled"><h2><span class="n">4</span><span class="t">จอ OLED ด้วย U8g2</span><label class="done"><input type="checkbox" data-done="L04_oled"> เรียนแล้ว</label></h2><h3>เรียนอะไร</h3>
+<ul><li>จอบนบอร์ดเป็น OLED 128×64 ชิป <strong>SSD1306</strong> ต่อบัส I2C (SDA 21, SCL 22) ที่แอดเดรส <code>0x3C</code></li><li>ไลบรารี <strong>U8g2</strong> รองรับจอหลายร้อยรุ่นและมีฟอนต์ในตัว ใช้งานแบบ <strong>full buffer</strong>:
+<ol><li><code>clearBuffer()</code> ล้างภาพใน RAM</li><li>วาด/เขียนข้อความลง buffer (<code>drawStr</code>, <code>print</code>, <code>drawBox</code>, <code>drawFrame</code>, ...)</li><li><code>sendBuffer()</code> ส่งทั้งภาพไปที่จอครั้งเดียว — จอจึงไม่กระพริบ</li></ol></li><li>แอดเดรสใน U8g2 เป็นแบบ 8 บิต จึงต้องคูณ 2: <code>setI2CAddress(0x3C * 2)</code></li><li>พิกัด y ของ <code>drawStr</code> คือ <strong>เส้นฐานของตัวอักษร</strong> ไม่ใช่ขอบบน</li><li>อย่าวาดจอทุกรอบ <code>loop()</code> — การส่ง 1 KB ผ่าน I2C ใช้เวลาราว 25 ms อัปเดต 5–10 ครั้ง/วินาทีก็พอ</li><li>ฟอนต์ที่ใช้บ่อย: <code>u8g2_font_6x10_tf</code> (ข้อความเล็ก), <code>u8g2_font_logisoso22_tn</code> (ตัวเลขใหญ่ — <code>_tn</code> มีแค่ตัวเลข) ดูรายการทั้งหมดที่ <a href="https://github.com/olikraus/u8g2/wiki/fntlistall" target="_blank" rel="noopener">U8g2 font list</a></li><li>จอนี้แสดงภาษาไทยด้วยฟอนต์ทั่วไปไม่ได้ ให้ใช้ข้อความภาษาอังกฤษสั้น ๆ</li></ul>
+<h3>ลองทำ</h3>
+<p>อัปโหลด <a href="#code-L04_oled">L04_oled.ino</a> แล้วหมุน KNOB — ตัวเลข mV และแถบกราฟจะเปลี่ยนตาม</p>
+<p>ถ้าจอไม่ติด: ตรวจผลสแกน I2C ใน L00 ถ้าเป็น <code>0x3D</code> ให้แก้ <code>setI2CAddress(0x3D * 2)</code></p>
+<h3>แบบฝึกหัด</h3>
+<ol><li>ทำ <strong>กราฟเส้นย้อนหลัง</strong> 128 จุดของค่า KNOB (เก็บค่าใน array แบบวงกลมแล้ววาดด้วย <code>drawPixel</code> หรือ <code>drawLine</code>)</li><li>ใช้ BUTTON สลับ <strong>หน้าจอ 2 หน้า</strong>: หน้าตัวเลขใหญ่ และหน้ากราฟ</li><li>ออกแบบหน้าจอสถานะของ "ตู้อบกาแฟ" ขนาด 128×64 ที่ต้องมี: อุณหภูมิ, ความชื้น, สถานะฮีตเตอร์/พัดลม, สถานะ Wi-Fi/MQTT และ <code>lot_id</code> — วาดบนกระดาษก่อนแล้วค่อยเขียนโค้ด (จะใช้ในบทที่ 9)</li></ol><div class="code" id="code-L04_oled"><h3>โค้ด · <code>L04_oled</code></h3><details class="sketch" open><summary><span class="fn">L04_oled.ino</span><span class="ln">50 บรรทัด</span></summary><div class="bar"><button class="copy" type="button">คัดลอก</button><button class="dl" type="button" data-name="L04_oled.ino">ดาวน์โหลด</button><a href="https://github.com/apisake/tgr2026-team-coach/tree/main/tutorial/L04_oled" target="_blank" rel="noopener">GitHub</a></div><pre><code><span class="c">// L04 · จอ OLED 0.96&quot; (SSD1306, I2C) ด้วยไลบรารี U8g2</span>
+<span class="c">// แสดงค่า KNOB เป็นตัวเลข + แถบกราฟ + เวลาที่บอร์ดทำงาน</span>
+<span class="p">
+#include &lt;U8g2lib.h&gt;</span>
+<span class="p">#include &lt;Wire.h&gt;</span>
+
+<span class="k">const</span> <span class="k">int</span> SDA_PIN = <span class="n">21</span>;
+<span class="k">const</span> <span class="k">int</span> SCL_PIN = <span class="n">22</span>;
+<span class="k">const</span> <span class="k">int</span> KNOB_PIN = <span class="n">36</span>;
+
+<span class="c">// F = full buffer (ใช้ RAM 1 KB วาดทั้งจอแล้วส่งครั้งเดียว)</span>
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE, SCL_PIN, SDA_PIN);
+
+<span class="k">void</span> setup() {
+  Serial.begin(<span class="n">115200</span>);
+  oled.setI2CAddress(<span class="n">0x3C</span> * <span class="n">2</span>);  <span class="c">// U8g2 ใช้แอดเดรสแบบ 8 บิต</span>
+  oled.begin();
+  oled.setContrast(<span class="n">200</span>);
+}
+
+<span class="k">void</span> loop() {
+  <span class="k">static</span> <span class="k">unsigned</span> <span class="k">long</span> last = <span class="n">0</span>;
+  <span class="k">if</span> (millis() - last &lt; <span class="n">100</span>) <span class="k">return</span>;  <span class="c">// อัปเดตจอ 10 ครั้ง/วินาที</span>
+  last = millis();
+
+  <span class="k">int</span> mv = analogReadMilliVolts(KNOB_PIN);
+  <span class="k">unsigned</span> <span class="k">long</span> sec = millis() / <span class="n">1000</span>;
+
+  oled.clearBuffer();
+
+  oled.setFont(u8g2_font_6x10_tf);
+  oled.drawStr(<span class="n">0</span>, <span class="n">10</span>, <span class="s">&quot;IPST-WiFi  KNOB&quot;</span>);
+  oled.drawHLine(<span class="n">0</span>, <span class="n">13</span>, <span class="n">128</span>);
+
+  oled.setFont(u8g2_font_logisoso22_tn);
+  oled.setCursor(<span class="n">0</span>, <span class="n">42</span>);
+  oled.print(mv);
+  oled.setFont(u8g2_font_6x10_tf);
+  oled.drawStr(<span class="n">70</span>, <span class="n">42</span>, <span class="s">&quot;mV&quot;</span>);
+
+  <span class="c">// แถบกราฟ 0–3300 mV</span>
+  <span class="k">int</span> w = map(constrain(mv, <span class="n">0</span>, <span class="n">3300</span>), <span class="n">0</span>, <span class="n">3300</span>, <span class="n">0</span>, <span class="n">124</span>);
+  oled.drawFrame(<span class="n">0</span>, <span class="n">48</span>, <span class="n">128</span>, <span class="n">8</span>);
+  oled.drawBox(<span class="n">2</span>, <span class="n">50</span>, w, <span class="n">4</span>);
+
+  oled.setCursor(<span class="n">0</span>, <span class="n">64</span>);
+  oled.printf(<span class="s">&quot;up %02lu:%02lu:%02lu&quot;</span>, sec / <span class="n">3600</span>, (sec / <span class="n">60</span>) % <span class="n">60</span>, sec % <span class="n">60</span>);
+
+  oled.sendBuffer();
+}</code></pre></details></div></section>
+
+<section id="L05_zx_sensors" data-lesson="L05_zx_sensors"><h2><span class="n">5</span><span class="t">เซ็นเซอร์ ZX ในชุด Activity Kit</span><label class="done"><input type="checkbox" data-done="L05_zx_sensors"> เรียนแล้ว</label></h2><h3>เรียนอะไร</h3>
+<ul><li>การต่อบอร์ด ZX ผ่านพอร์ต JST 3 ขา (S, +, GND) — เสียบได้ทางเดียว ไม่ต้องใช้ breadboard</li><li><strong>แปลงแรงดันเป็นหน่วยจริงจาก datasheet</strong>: ZX-MCP9701 ให้แรงดัน 400 mV ที่ 0 °C และเพิ่ม 19.5 mV ต่อ °C
+<div class="snip"><button class="copy" type="button">คัดลอก</button><pre><code>°C = (Vout[mV] − 400) / 19.5</code></pre></div>
+<p>ช่วงวัด −40 ถึง +125 °C ความแม่นยำของตัวชิปราว ±2–4 °C จึงควร <strong>calibrate offset</strong> เทียบกับเทอร์โมมิเตอร์อ้างอิง</p></li><li><strong>Two-point calibration</strong>: ZX-SOIL ให้แรงดันเปลี่ยนตามความนำไฟฟ้าของดิน/วัสดุ ซึ่งไม่ใช่ % ความชื้นโดยตรง วัดแรงดันที่สภาพ "แห้ง" และ "เปียก" แล้วเทียบเชิงเส้นเป็น 0–100%</li><li><strong>Threshold + การแจ้งเตือน</strong>: เกินค่าที่กำหนด → ติด ZX-LED และส่งเสียง</li></ul>
+<h3>ฮาร์ดแวร์</h3>
+<div class="tbl"><table><thead><tr><th>บอร์ด</th><th>พอร์ต</th><th>GPIO</th></tr></thead><tbody><tr><td>ZX-MCP9701 (สายพร้อมหัวโลหะ)</td><td>K7</td><td>32</td></tr><tr><td>ZX-SOIL</td><td>K8</td><td>33</td></tr><tr><td>ZX-SWITCH01</td><td>K3</td><td>5</td></tr><tr><td>ZX-LED</td><td>K5</td><td>23</td></tr></tbody></table></div>
+<h3>ลองทำ</h3>
+<ol><li>อัปโหลด <a href="#code-L05_zx_sensors">L05_zx_sensors.ino</a> — จอแสดงอุณหภูมิและ % ความชื้น</li><li><strong>Calibrate ZX-SOIL</strong>: กด ZX-SWITCH01 ค้างไว้ จอจะแสดงค่า mV ดิบ
+<ul><li>จดค่าเมื่อหัววัดแห้งในอากาศ → <code>soilDryMv</code></li><li>จดค่าเมื่อจุ่มในน้ำ (ไม่ให้น้ำโดนวงจร) → <code>soilWetMv</code></li><li>แก้ค่าทั้งสองที่หัวไฟล์แล้วอัปโหลดใหม่</li></ul></li><li>กำหัวโลหะของ ZX-MCP9701 ไว้ในมือ หรือจุ่มน้ำอุ่น จนเกิน 40 °C — ZX-LED ติดและมีเสียงเตือน (ถ้าไม่มีน้ำอุ่น ลดค่า <code>TEMP_ALARM_C</code> ลงชั่วคราวเพื่อทดสอบ)</li></ol>
+<h3>แบบฝึกหัด</h3>
+<ol><li>เพิ่ม <strong>offset calibration</strong> ของอุณหภูมิ: วัดเทียบกับเทอร์โมมิเตอร์ แล้วบวกค่าแก้ไขในฟังก์ชัน <code>mcp9701C()</code></li><li>ตอนนี้เสียงเตือนจะเปิด-ปิดถี่ ๆ ถ้าอุณหภูมิแกว่งอยู่ที่ 40.0 °C — แก้ด้วย <strong>hysteresis</strong>: เตือนเมื่อเกิน 40 °C แต่หยุดเตือนเมื่อต่ำกว่า 38 °C</li><li>ให้ ZX-SWITCH01 กดสั้น 1 ครั้ง = "ปิดเสียงเตือน 60 วินาที" (snooze) ขณะที่ ZX-LED ยังติดอยู่</li><li><strong>คิดต่อกับโจทย์ (R4 ในแผน):</strong> ZX-SOIL วัด "ความชื้นของเมล็ดกาแฟสาร" ได้แม่นแค่ไหน ข้อจำกัดคืออะไร (ใบ้: ผิวสัมผัส ความหนาแน่น อุณหภูมิ) เครื่องวัดความชื้นเมล็ดพืชจริงใช้หลักการอะไร และถ้าต้องใช้เซ็นเซอร์ราคาถูกจะ calibrate กับวิธีอบแห้งอย่างไร</li></ol><div class="code" id="code-L05_zx_sensors"><h3>โค้ด · <code>L05_zx_sensors</code></h3><details class="sketch" open><summary><span class="fn">L05_zx_sensors.ino</span><span class="ln">94 บรรทัด</span></summary><div class="bar"><button class="copy" type="button">คัดลอก</button><button class="dl" type="button" data-name="L05_zx_sensors.ino">ดาวน์โหลด</button><a href="https://github.com/apisake/tgr2026-team-coach/tree/main/tutorial/L05_zx_sensors" target="_blank" rel="noopener">GitHub</a></div><pre><code><span class="c">// L05 · เซ็นเซอร์ในชุด IPST-WiFi Activity Kit</span>
+<span class="c">//   K7 GPIO32  ZX-MCP9701  อุณหภูมิ</span>
+<span class="c">//   K8 GPIO33  ZX-SOIL     ความชื้น (แปลงเป็น % ด้วยค่า calibrate)</span>
+<span class="c">//   K3 GPIO5   ZX-SWITCH01 กด = LOW</span>
+<span class="c">//   K5 GPIO23  ZX-LED      HIGH = ติด</span>
+<span class="c">// ติด ZX-LED + เสียงเตือนเมื่ออุณหภูมิเกิน TEMP_ALARM_C</span>
+<span class="p">
+#include &lt;U8g2lib.h&gt;</span>
+<span class="p">#include &lt;Wire.h&gt;</span>
+
+<span class="k">const</span> <span class="k">int</span> TEMP_PIN = <span class="n">32</span>;
+<span class="k">const</span> <span class="k">int</span> SOIL_PIN = <span class="n">33</span>;
+<span class="k">const</span> <span class="k">int</span> SWITCH_PIN = <span class="n">5</span>;
+<span class="k">const</span> <span class="k">int</span> ZXLED_PIN = <span class="n">23</span>;
+<span class="k">const</span> <span class="k">int</span> BUZZER_PIN = <span class="n">26</span>;
+<span class="k">const</span> <span class="k">int</span> SDA_PIN = <span class="n">21</span>;
+<span class="k">const</span> <span class="k">int</span> SCL_PIN = <span class="n">22</span>;
+
+<span class="c">// ค่า calibrate ZX-SOIL: วัดจริงตอนแห้งและตอนจุ่มน้ำ แล้วแก้สองค่านี้</span>
+<span class="k">int</span> soilDryMv = <span class="n">300</span>;
+<span class="k">int</span> soilWetMv = <span class="n">2500</span>;
+
+<span class="k">const</span> <span class="k">float</span> TEMP_ALARM_C = <span class="n">40.0</span>;
+
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE, SCL_PIN, SDA_PIN);
+
+<span class="c">// อ่าน n ครั้งแล้วคืน median ของค่า mV</span>
+<span class="k">int</span> readMv(<span class="k">int</span> pin, <span class="k">int</span> n = <span class="n">9</span>) {
+  <span class="k">int</span> v[<span class="n">15</span>];
+  n = constrain(n, <span class="n">1</span>, <span class="n">15</span>);
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) v[i] = analogReadMilliVolts(pin);
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n; i++) {
+    <span class="k">int</span> x = v[i], j = i - <span class="n">1</span>;
+    <span class="k">while</span> (j &gt;= <span class="n">0</span> &amp;&amp; v[j] &gt; x) { v[j + <span class="n">1</span>] = v[j]; j--; }
+    v[j + <span class="n">1</span>] = x;
+  }
+  <span class="k">return</span> v[n / <span class="n">2</span>];
+}
+
+<span class="c">// MCP9701: Vout = 400 mV + 19.5 mV/°C</span>
+<span class="k">float</span> mcp9701C(<span class="k">int</span> mv) {
+  <span class="k">return</span> (mv - <span class="n">400</span>) / <span class="n">19.5</span>;
+}
+
+<span class="c">// แปลง mV เป็น % ตามจุด calibrate (ใช้ได้ทั้งกรณีเปียกแล้วแรงดันขึ้นหรือลง)</span>
+<span class="k">float</span> soilPercent(<span class="k">int</span> mv) {
+  <span class="k">float</span> pct = <span class="n">100.0</span> * (mv - soilDryMv) / (soilWetMv - soilDryMv);
+  <span class="k">return</span> constrain(pct, <span class="n">0</span>, <span class="n">100</span>);
+}
+
+<span class="k">void</span> setup() {
+  Serial.begin(<span class="n">115200</span>);
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  pinMode(ZXLED_PIN, OUTPUT);
+  ledcAttach(BUZZER_PIN, <span class="n">2500</span>, <span class="n">8</span>);
+  oled.setI2CAddress(<span class="n">0x3C</span> * <span class="n">2</span>);
+  oled.begin();
+  Serial.println(<span class="s">&quot;กด ZX-SWITCH01 ค้างไว้เพื่อดูค่า mV ของ ZX-SOIL สำหรับ calibrate&quot;</span>);
+}
+
+<span class="k">void</span> loop() {
+  <span class="k">static</span> <span class="k">unsigned</span> <span class="k">long</span> last = <span class="n">0</span>;
+  <span class="k">if</span> (millis() - last &lt; <span class="n">500</span>) <span class="k">return</span>;
+  last = millis();
+
+  <span class="k">int</span> tMv = readMv(TEMP_PIN);
+  <span class="k">int</span> sMv = readMv(SOIL_PIN);
+  <span class="k">float</span> tempC = mcp9701C(tMv);
+  <span class="k">float</span> soil = soilPercent(sMv);
+  <span class="k">bool</span> calMode = digitalRead(SWITCH_PIN) == LOW;
+  <span class="k">bool</span> alarm = tempC &gt; TEMP_ALARM_C;
+
+  digitalWrite(ZXLED_PIN, alarm ? HIGH : LOW);
+  ledcWrite(BUZZER_PIN, alarm &amp;&amp; (millis() / <span class="n">500</span>) % <span class="n">2</span> ? <span class="n">128</span> : <span class="n">0</span>);
+
+  Serial.printf(<span class="s">&quot;temp:%.1f,soil_pct:%.0f,temp_mv:%d,soil_mv:%d\n&quot;</span>, tempC, soil, tMv, sMv);
+
+  oled.clearBuffer();
+  oled.setFont(u8g2_font_6x10_tf);
+  oled.drawStr(<span class="n">0</span>, <span class="n">10</span>, calMode ? <span class="s">&quot;CALIBRATE (raw mV)&quot;</span> : <span class="s">&quot;ZX sensors&quot;</span>);
+  oled.drawHLine(<span class="n">0</span>, <span class="n">13</span>, <span class="n">128</span>);
+  oled.setFont(u8g2_font_logisoso16_tr);
+  oled.setCursor(<span class="n">0</span>, <span class="n">36</span>);
+  <span class="k">if</span> (calMode) oled.printf(<span class="s">&quot;T %d&quot;</span>, tMv);
+  <span class="k">else</span> oled.printf(<span class="s">&quot;%.1f C&quot;</span>, tempC);
+  oled.setCursor(<span class="n">0</span>, <span class="n">60</span>);
+  <span class="k">if</span> (calMode) oled.printf(<span class="s">&quot;S %d&quot;</span>, sMv);
+  <span class="k">else</span> oled.printf(<span class="s">&quot;%.0f %%&quot;</span>, soil);
+  <span class="k">if</span> (alarm) {
+    oled.setFont(u8g2_font_6x10_tf);
+    oled.drawStr(<span class="n">92</span>, <span class="n">36</span>, <span class="s">&quot;HOT!&quot;</span>);
+  }
+  oled.sendBuffer();
+}</code></pre></details></div></section>
+
+<section id="L06_i2c_sensor" data-lesson="L06_i2c_sensor"><h2><span class="n">6</span><span class="t">I2C: ต่อเซ็นเซอร์ที่ไม่เคยเห็นภายใน 30 นาที</span><label class="done"><input type="checkbox" data-done="L06_i2c_sensor"> เรียนแล้ว</label></h2><p>ผู้จัดจะให้เซ็นเซอร์ที่ยังไม่ระบุรุ่น บทนี้ฝึก <strong>วิธีคิด</strong> ไม่ใช่ท่องไลบรารี ใช้ SHT3x (อุณหภูมิ + ความชื้นสัมพัทธ์) เป็นตัวอย่าง เพราะเกี่ยวกับการตากและอบกาแฟโดยตรง</p>
+<h3>เรียนอะไร</h3>
+<ul><li><strong>I2C</strong> ใช้สาย 2 เส้น (SDA ข้อมูล, SCL สัญญาณนาฬิกา) ต่ออุปกรณ์หลายตัวบนบัสเดียว แยกกันด้วย <strong>แอดเดรส 7 บิต</strong></li><li>บนบอร์ดนี้ OLED (<code>0x3C</code>) อยู่บนบัสเดียวกับพอร์ต K2 แล้ว จึงต่อเซ็นเซอร์เพิ่มได้เลยถ้าแอดเดรสไม่ซ้ำ</li><li>รูปแบบการคุยกับเซ็นเซอร์ I2C เกือบทุกตัว:
+<ol><li><code>beginTransmission(addr)</code> → <code>write(คำสั่ง/register)</code> → <code>endTransmission()</code></li><li>รอเวลาวัดตาม datasheet</li><li><code>requestFrom(addr, n)</code> → <code>read()</code> n ไบต์</li><li>รวมไบต์ ตรวจ CRC (ถ้ามี) แล้วแปลงเป็นหน่วยจริงด้วยสูตรใน datasheet</li></ol></li><li><code>Wire.endTransmission()</code> คืน 0 เมื่อมีอุปกรณ์ตอบ (ACK) — I2C scanner ใช้หลักนี้</li></ul>
+<h3>สูตรต่อเซ็นเซอร์ใหม่ใน 30 นาที</h3>
+<div class="tbl"><table><thead><tr><th>นาที</th><th>ทำอะไร</th></tr></thead><tbody><tr><td>0–5</td><td>อ่านชื่อชิปบนบอร์ด เปิด datasheet (เตรียมไว้ในเครื่องก่อนไป) หา: ไฟเลี้ยง (3.3 V ได้ไหม), interface, แอดเดรส</td></tr><tr><td>5–10</td><td>ต่อสาย (VCC→3.3V, GND, SDA→21, SCL→22) แล้วรัน <strong>I2C scanner</strong> — ต้องเห็นแอดเดรสก่อนทำอย่างอื่น</td></tr><tr><td>10–20</td><td>มีไลบรารีในเครื่องไหม? ถ้ามี เปิด example ของไลบรารีแล้วแก้ขา ถ้าไม่มี ทำตามตาราง "คำสั่งวัด" และ "สูตรแปลงค่า" ใน datasheet แบบในสเก็ตช์นี้</td></tr><tr><td>20–25</td><td>ตรวจค่าให้สมเหตุสมผล (อุณหภูมิห้อง ~25–35 °C, RH 40–80%) ลองเป่าลม/จับเซ็นเซอร์ดูว่าค่าเปลี่ยน</td></tr><tr><td>25–30</td><td>ห่อเป็นฟังก์ชัน <code>bool readXxx(float &amp;...)</code> ที่คืน <code>false</code> เมื่ออ่านไม่ได้ แล้วนำไปรวมกับ firmware template (บทที่ 9)</td></tr></tbody></table></div>
+<p>ถ้า scanner ไม่เจออะไร: สลับ SDA/SCL, ตรวจไฟเลี้ยง, ตรวจว่าโมดูลมีตัวต้านทาน pull-up หรือไม่ (บนบอร์ด IPST-WiFi มี pull-up 1.8k ให้แล้ว)</p>
+<h3>ลองทำ</h3>
+<p>ต่อ SHT30/SHT31 ที่พอร์ต K2 แล้วอัปโหลด <a href="#code-L06_i2c_sensor">L06_i2c_sensor.ino</a> ถ้าไม่มี SHT3x ให้รันเพื่อดูผลสแกน (จะเห็น OLED ที่ <code>0x3C</code>) แล้วทำแบบฝึกหัดกับเซ็นเซอร์ I2C ที่มี</p>
+<h3>แบบฝึกหัด</h3>
+<ol><li>ทำให้สเก็ตช์ <strong>หาแอดเดรสเอง</strong>: ลอง <code>0x44</code> ถ้าไม่ตอบให้ลอง <code>0x45</code></li><li>ใช้ <strong>คำสั่ง heater</strong> ของ SHT3x (ดู datasheet หัวข้อ Heater) เปิด 10 วินาทีแล้วสังเกตอุณหภูมิที่เพิ่ม — ทำไมเซ็นเซอร์ความชื้นต้องมี heater</li><li>เปลี่ยนเป็นเซ็นเซอร์อื่นที่มีในห้อง (เช่น BH1750 ที่ <code>0x23</code>: ส่งคำสั่ง <code>0x10</code> แล้วอ่าน 2 ไบต์ ÷ 1.2 = lux) โดยดู datasheet เท่านั้น จับเวลาว่าใช้กี่นาที</li><li><strong>ฝึกแบบวันแข่ง:</strong> ให้เพื่อนเลือกเซ็นเซอร์ 1 ตัวที่คุณไม่เคยใช้ (I2C, 1-Wire DS18B20, หรือ HX711 load cell) แล้วจับเวลาจนส่งค่าออก Serial ได้ — เป้าหมาย ≤ 30 นาที</li></ol><div class="code" id="code-L06_i2c_sensor"><h3>โค้ด · <code>L06_i2c_sensor</code></h3><details class="sketch" open><summary><span class="fn">L06_i2c_sensor.ino</span><span class="ln">68 บรรทัด</span></summary><div class="bar"><button class="copy" type="button">คัดลอก</button><button class="dl" type="button" data-name="L06_i2c_sensor.ino">ดาวน์โหลด</button><a href="https://github.com/apisake/tgr2026-team-coach/tree/main/tutorial/L06_i2c_sensor" target="_blank" rel="noopener">GitHub</a></div><pre><code><span class="c">// L06 · I2C: สแกนบัส แล้วอ่าน SHT3x (อุณหภูมิ/ความชื้นสัมพัทธ์) จาก datasheet โดยไม่ใช้ไลบรารี</span>
+<span class="c">// ต่อ SHT30/SHT31/SHT35 ที่พอร์ต K2 (I2C) — ใช้บัสเดียวกับ OLED</span>
+<span class="p">
+#include &lt;Wire.h&gt;</span>
+
+<span class="k">const</span> <span class="k">int</span> SDA_PIN = <span class="n">21</span>;
+<span class="k">const</span> <span class="k">int</span> SCL_PIN = <span class="n">22</span>;
+<span class="k">const</span> <span class="k">uint8_t</span> SHT3X_ADDR = <span class="n">0x44</span>;  <span class="c">// 0x45 ถ้าขา ADDR ต่อ VDD</span>
+
+<span class="k">void</span> scanI2C() {
+  Serial.println(<span class="s">&quot;สแกน I2C:&quot;</span>);
+  <span class="k">for</span> (<span class="k">uint8_t</span> addr = <span class="n">1</span>; addr &lt; <span class="n">127</span>; addr++) {
+    Wire.beginTransmission(addr);
+    <span class="k">if</span> (Wire.endTransmission() == <span class="n">0</span>) Serial.printf(<span class="s">&quot;  0x%02X\n&quot;</span>, addr);
+  }
+}
+
+<span class="c">// CRC-8 ตาม datasheet SHT3x: polynomial 0x31, ค่าเริ่ม 0xFF</span>
+<span class="k">uint8_t</span> crc8(<span class="k">const</span> <span class="k">uint8_t</span> *data, <span class="k">int</span> len) {
+  <span class="k">uint8_t</span> crc = <span class="n">0xFF</span>;
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; len; i++) {
+    crc ^= data[i];
+    <span class="k">for</span> (<span class="k">int</span> b = <span class="n">0</span>; b &lt; <span class="n">8</span>; b++) crc = (crc &amp; <span class="n">0x80</span>) ? (crc &lt;&lt; <span class="n">1</span>) ^ <span class="n">0x31</span> : crc &lt;&lt; <span class="n">1</span>;
+  }
+  <span class="k">return</span> crc;
+}
+
+<span class="c">// วัดแบบ single shot, high repeatability, ไม่ใช้ clock stretching (คำสั่ง 0x2400)</span>
+<span class="k">bool</span> readSht3x(<span class="k">float</span> &amp;tempC, <span class="k">float</span> &amp;rh) {
+  Wire.beginTransmission(SHT3X_ADDR);
+  Wire.write(<span class="n">0x24</span>);
+  Wire.write(<span class="n">0x00</span>);
+  <span class="k">if</span> (Wire.endTransmission() != <span class="n">0</span>) <span class="k">return</span> <span class="k">false</span>;  <span class="c">// ไม่มีอุปกรณ์ตอบ</span>
+
+  delay(<span class="n">16</span>);  <span class="c">// datasheet: high repeatability ใช้เวลาสูงสุด 15.5 ms</span>
+
+  <span class="k">if</span> (Wire.requestFrom(SHT3X_ADDR, (<span class="k">uint8_t</span>)<span class="n">6</span>) != <span class="n">6</span>) <span class="k">return</span> <span class="k">false</span>;
+  <span class="k">uint8_t</span> d[<span class="n">6</span>];
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">6</span>; i++) d[i] = Wire.read();
+  <span class="k">if</span> (crc8(d, <span class="n">2</span>) != d[<span class="n">2</span>] || crc8(d + <span class="n">3</span>, <span class="n">2</span>) != d[<span class="n">5</span>]) <span class="k">return</span> <span class="k">false</span>;  <span class="c">// ข้อมูลเสีย</span>
+
+  <span class="k">uint16_t</span> rawT = (d[<span class="n">0</span>] &lt;&lt; <span class="n">8</span>) | d[<span class="n">1</span>];
+  <span class="k">uint16_t</span> rawRH = (d[<span class="n">3</span>] &lt;&lt; <span class="n">8</span>) | d[<span class="n">4</span>];
+  tempC = -<span class="n">45</span> + <span class="n">175.0</span> * rawT / <span class="n">65535.0</span>;
+  rh = <span class="n">100.0</span> * rawRH / <span class="n">65535.0</span>;
+  <span class="k">return</span> <span class="k">true</span>;
+}
+
+<span class="k">void</span> setup() {
+  Serial.begin(<span class="n">115200</span>);
+  delay(<span class="n">500</span>);
+  Wire.begin(SDA_PIN, SCL_PIN);
+  Wire.setClock(<span class="n">100000</span>);
+  scanI2C();
+}
+
+<span class="k">void</span> loop() {
+  <span class="k">static</span> <span class="k">unsigned</span> <span class="k">long</span> last = <span class="n">0</span>;
+  <span class="k">if</span> (millis() - last &lt; <span class="n">2000</span>) <span class="k">return</span>;
+  last = millis();
+
+  <span class="k">float</span> t, rh;
+  <span class="k">if</span> (readSht3x(t, rh)) {
+    Serial.printf(<span class="s">&quot;temp:%.2f,rh:%.1f\n&quot;</span>, t, rh);
+  } <span class="k">else</span> {
+    Serial.println(<span class="s">&quot;อ่าน SHT3x ไม่ได้ — ตรวจสาย/แอดเดรส&quot;</span>);
+  }
+}</code></pre></details></div></section>
+
+<section id="L07_wifi_ntp" data-lesson="L07_wifi_ntp"><h2><span class="n">7</span><span class="t">Wi-Fi และเวลาจาก NTP</span><label class="done"><input type="checkbox" data-done="L07_wifi_ntp"> เรียนแล้ว</label></h2><h3>เรียนอะไร</h3>
+<ul><li><code>WiFi.begin()</code> <strong>ไม่รอ</strong> จนเชื่อมต่อสำเร็จ — ตัวอย่างทั่วไปมักมี <code>while (WiFi.status() != WL_CONNECTED) delay(500);</code> ซึ่งทำให้บอร์ดค้างทั้งตัวถ้า router ล่ม ในบทนี้ <code>loop()</code> ทำงานต่อได้เสมอ และ <code>maintainWifi()</code> คอยสั่งเชื่อมใหม่ทุก 10 วินาทีเมื่อหลุด</li><li><strong>ESP32 ใช้ Wi-Fi 2.4 GHz เท่านั้น</strong> — ถ้า travel router ตั้งชื่อเดียวกันทั้ง 2.4/5 GHz ให้แยกชื่อ</li><li><strong>NTP</strong>: <code>configTzTime()</code> ตั้งเขตเวลาและเซิร์ฟเวอร์ครั้งเดียว ระบบ SNTP จะ sync ให้เองในพื้นหลัง ใช้ <code>time(nullptr)</code> อ่านเวลา</li><li><strong>ก่อน sync นาฬิกาเริ่มที่ปี 1970</strong> — ห้ามส่งเวลานั้นออกไปเป็น <code>ts</code> ใช้ <code>timeValid()</code> ตรวจก่อนเสมอ</li><li>รูปแบบเวลาที่ตกลงกันในทีม: <strong>ISO 8601 พร้อม offset</strong> เช่น <code>2026-11-17T14:05:09+07:00</code> (Python อ่านได้ด้วย <code>datetime.fromisoformat()</code>)</li><li><strong>ในสนามแข่งอาจไม่มีอินเทอร์เน็ต</strong>: ให้ Pi หรือ notebook ของทีมเป็น NTP server (เช่น <code>chrony</code> ที่ตั้ง <code>local stratum 10</code> และ <code>allow 192.168.0.0/16</code>) แล้วใส่ IP นั้นใน <code>NTP_SERVER</code></li></ul>
+<h3>ลองทำ</h3>
+<ol><li>แก้ <code>WIFI_SSID</code> และ <code>WIFI_PASS</code> ใน <a href="#code-L07_wifi_ntp">L07_wifi_ntp.ino</a> แล้วอัปโหลด</li><li>จอแสดง IP, ความแรงสัญญาณ (RSSI) และนาฬิกา — LED บนบอร์ดกระพริบเร็วระหว่างยังไม่เชื่อมต่อ</li><li><strong>ทดสอบความทน:</strong> ปิด hotspot/router 30 วินาทีแล้วเปิดใหม่ — บอร์ดต้องกลับมาเชื่อมต่อเองโดยไม่ต้องกด RESET และนาฬิกายังเดินต่อระหว่างหลุด</li></ol>
+<div class="note">อย่า commit รหัส Wi-Fi จริงขึ้น Git — แก้ในเครื่องก่อนอัปโหลด หรือย้ายไปไว้ในไฟล์ <code>secrets.h</code> ที่อยู่ใน <code>.gitignore</code></div>
+<h3>แบบฝึกหัด</h3>
+<ol><li>ใช้ <code>WiFi.onEvent()</code> พิมพ์ข้อความทุกครั้งที่ได้ IP และทุกครั้งที่หลุด พร้อมเหตุผล (<code>info.wifi_sta_disconnected.reason</code>)</li><li>รองรับ <strong>Wi-Fi 2 ชุด</strong> (travel router ของทีม และ Wi-Fi สนาม) ด้วย <code>WiFiMulti</code></li><li>ตั้ง <strong>IP คงที่</strong> ด้วย <code>WiFi.config()</code> — ข้อดีข้อเสียเทียบกับ DHCP ในวันแข่งคืออะไร</li><li>ตั้ง NTP server บน Pi หรือ notebook แล้วทดสอบโดยตัดอินเทอร์เน็ตออก</li></ol><div class="code" id="code-L07_wifi_ntp"><h3>โค้ด · <code>L07_wifi_ntp</code></h3><details class="sketch" open><summary><span class="fn">L07_wifi_ntp.ino</span><span class="ln">103 บรรทัด</span></summary><div class="bar"><button class="copy" type="button">คัดลอก</button><button class="dl" type="button" data-name="L07_wifi_ntp.ino">ดาวน์โหลด</button><a href="https://github.com/apisake/tgr2026-team-coach/tree/main/tutorial/L07_wifi_ntp" target="_blank" rel="noopener">GitHub</a></div><pre><code><span class="c">// L07 · Wi-Fi + reconnect แบบไม่บล็อก + เวลาจาก NTP</span>
+<span class="c">// แก้ WIFI_SSID / WIFI_PASS / NTP_SERVER ก่อนอัปโหลด</span>
+<span class="p">
+#include &lt;WiFi.h&gt;</span>
+<span class="p">#include &lt;time.h&gt;</span>
+<span class="p">#include &lt;U8g2lib.h&gt;</span>
+<span class="p">#include &lt;Wire.h&gt;</span>
+
+<span class="k">const</span> <span class="k">char</span> *WIFI_SSID = <span class="s">&quot;YOUR_SSID&quot;</span>;
+<span class="k">const</span> <span class="k">char</span> *WIFI_PASS = <span class="s">&quot;YOUR_PASSWORD&quot;</span>;
+<span class="c">// ไม่มีอินเทอร์เน็ต → ใช้ IP ของ Pi/notebook ที่รัน NTP server (เช่น chrony) แทน</span>
+<span class="k">const</span> <span class="k">char</span> *NTP_SERVER = <span class="s">&quot;pool.ntp.org&quot;</span>;
+<span class="k">const</span> <span class="k">char</span> *NTP_SERVER2 = <span class="s">&quot;time.navy.mi.th&quot;</span>;
+<span class="k">const</span> <span class="k">char</span> *TZ_THAILAND = <span class="s">&quot;&lt;+07&gt;-7&quot;</span>;  <span class="c">// POSIX TZ: UTC+7</span>
+
+<span class="k">const</span> <span class="k">int</span> LED_PIN = <span class="n">18</span>;
+<span class="k">const</span> <span class="k">int</span> SDA_PIN = <span class="n">21</span>;
+<span class="k">const</span> <span class="k">int</span> SCL_PIN = <span class="n">22</span>;
+
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE, SCL_PIN, SDA_PIN);
+
+<span class="k">unsigned</span> <span class="k">long</span> lastWifiCheck = <span class="n">0</span>;
+
+<span class="k">void</span> startWifi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(<span class="k">true</span>);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+}
+
+<span class="c">// ตรวจทุก 10 วินาที ถ้าหลุดนานให้สั่งเชื่อมใหม่ โดยไม่หยุดรอ</span>
+<span class="k">void</span> maintainWifi() {
+  <span class="k">if</span> (millis() - lastWifiCheck &lt; <span class="n">10000</span>) <span class="k">return</span>;
+  lastWifiCheck = millis();
+  <span class="k">if</span> (WiFi.status() != WL_CONNECTED) {
+    Serial.println(<span class="s">&quot;Wi-Fi หลุด กำลังเชื่อมใหม่...&quot;</span>);
+    WiFi.disconnect();
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+  }
+}
+
+<span class="c">// เวลาถูกต้องเมื่อปีมากกว่า 2024 (ก่อน sync นาฬิกาจะเริ่มที่ปี 1970)</span>
+<span class="k">bool</span> timeValid() {
+  <span class="k">return</span> time(<span class="k">nullptr</span>) &gt; <span class="n">1704067200</span>;  <span class="c">// 2024-01-01T00:00:00Z</span>
+}
+
+<span class="c">// เวลาท้องถิ่นแบบ ISO 8601 เช่น 2026-11-17T14:05:09+07:00</span>
+<span class="k">String</span> isoTime() {
+  <span class="k">if</span> (!timeValid()) <span class="k">return</span> <span class="s">&quot;&quot;</span>;
+  time_t now = time(<span class="k">nullptr</span>);
+  <span class="k">struct</span> tm tm;
+  localtime_r(&amp;now, &amp;tm);
+  <span class="k">char</span> buf[<span class="n">32</span>];
+  strftime(buf, <span class="k">sizeof</span>(buf), <span class="s">&quot;%Y-%m-%dT%H:%M:%S%z&quot;</span>, &amp;tm);  <span class="c">// +0700</span>
+  <span class="k">String</span> s(buf);
+  s = s.substring(<span class="n">0</span>, s.length() - <span class="n">2</span>) + <span class="s">&quot;:&quot;</span> + s.substring(s.length() - <span class="n">2</span>);  <span class="c">// → +07:00</span>
+  <span class="k">return</span> s;
+}
+
+<span class="k">void</span> setup() {
+  Serial.begin(<span class="n">115200</span>);
+  pinMode(LED_PIN, OUTPUT);
+  oled.setI2CAddress(<span class="n">0x3C</span> * <span class="n">2</span>);
+  oled.begin();
+
+  startWifi();
+  <span class="c">// ตั้งค่า SNTP ครั้งเดียว ระบบจะ sync เองเมื่อมีเครือข่าย และ sync ซ้ำทุก 1 ชม.</span>
+  configTzTime(TZ_THAILAND, NTP_SERVER, NTP_SERVER2);
+}
+
+<span class="k">void</span> loop() {
+  maintainWifi();
+
+  <span class="k">bool</span> online = WiFi.status() == WL_CONNECTED;
+  digitalWrite(LED_PIN, online || (millis() / <span class="n">150</span>) % <span class="n">2</span> ? HIGH : LOW);  <span class="c">// กระพริบเร็ว = ยังไม่ต่อ</span>
+
+  <span class="k">static</span> <span class="k">unsigned</span> <span class="k">long</span> last = <span class="n">0</span>;
+  <span class="k">if</span> (millis() - last &lt; <span class="n">500</span>) <span class="k">return</span>;
+  last = millis();
+
+  <span class="k">String</span> ts = isoTime();
+  Serial.printf(<span class="s">&quot;wifi=%s ip=%s rssi=%d ts=%s\n&quot;</span>, online ? <span class="s">&quot;ok&quot;</span> : <span class="s">&quot;down&quot;</span>,
+                WiFi.localIP().toString().c_str(), online ? WiFi.RSSI() : <span class="n">0</span>,
+                ts.length() ? ts.c_str() : <span class="s">&quot;(ยังไม่ sync)&quot;</span>);
+
+  oled.clearBuffer();
+  oled.setFont(u8g2_font_6x10_tf);
+  oled.setCursor(<span class="n">0</span>, <span class="n">10</span>);
+  oled.printf(<span class="s">&quot;WiFi: %s&quot;</span>, online ? WIFI_SSID : <span class="s">&quot;connecting...&quot;</span>);
+  oled.setCursor(<span class="n">0</span>, <span class="n">22</span>);
+  <span class="k">if</span> (online) oled.printf(<span class="s">&quot;%s  %ddBm&quot;</span>, WiFi.localIP().toString().c_str(), WiFi.RSSI());
+  oled.drawHLine(<span class="n">0</span>, <span class="n">26</span>, <span class="n">128</span>);
+  <span class="k">if</span> (timeValid()) {
+    oled.setFont(u8g2_font_logisoso22_tn);
+    oled.setCursor(<span class="n">0</span>, <span class="n">54</span>);
+    oled.print(ts.substring(<span class="n">11</span>, <span class="n">19</span>));  <span class="c">// HH:MM:SS</span>
+    oled.setFont(u8g2_font_6x10_tf);
+    oled.setCursor(<span class="n">0</span>, <span class="n">64</span>);
+    oled.print(ts.substring(<span class="n">0</span>, <span class="n">10</span>));   <span class="c">// YYYY-MM-DD</span>
+  } <span class="k">else</span> {
+    oled.drawStr(<span class="n">0</span>, <span class="n">44</span>, <span class="s">&quot;waiting for NTP...&quot;</span>);
+  }
+  oled.sendBuffer();
+}</code></pre></details></div></section>
+
+<section id="L08_mqtt_json" data-lesson="L08_mqtt_json"><h2><span class="n">8</span><span class="t">MQTT + JSON</span><label class="done"><input type="checkbox" data-done="L08_mqtt_json"> เรียนแล้ว</label></h2><p>บทนี้คือ "ESP32 → Mosquitto บน Pi ส่งข้อมูลได้" ซึ่งเป็นเป้าหมายของ ส. 24 ต.ค. ในแผน</p>
+<h3>เรียนอะไร</h3>
+<ul><li><strong>MQTT</strong> = publish/subscribe ผ่าน broker (Mosquitto บน Pi) ผู้ส่งไม่ต้องรู้ว่าใครรับ</li><li><strong>Topic</strong> ที่ใช้ในบทนี้ (ปรับให้ตรงกับ <strong>Data Contract v1</strong> ของทีม):
+<div class="tbl"><table><thead><tr><th>Topic</th><th>ทิศทาง</th><th>เนื้อหา</th></tr></thead><tbody><tr><td><code>tgr2026/&lt;team&gt;/&lt;node_id&gt;/telemetry</code></td><td>ESP32 → broker</td><td>JSON ค่าเซ็นเซอร์ ทุก 5 วินาที</td></tr><tr><td><code>tgr2026/&lt;team&gt;/&lt;node_id&gt;/status</code></td><td>ESP32 → broker</td><td><code>online</code> / <code>offline</code> (retain)</td></tr><tr><td><code>tgr2026/&lt;team&gt;/&lt;node_id&gt;/cmd</code></td><td>broker → ESP32</td><td>JSON คำสั่ง</td></tr></tbody></table></div></li></ul>
+<ul><li><strong>ทุกข้อความต้องมี <code>lot_id</code> + <code>ts</code></strong> (หลักใน C1 ของแผน) — <code>lot_id</code> เชื่อมข้อมูลจาก sensor, vision และตลาดเข้าด้วยกัน ถ้ายังไม่ sync เวลา ให้ส่ง <code>ts: null</code> ไม่ใช่ปี 1970</li><li>ใส่ <code>seq</code> (เลขลำดับ) และ <code>uptime_ms</code> ด้วย ฝั่งรับจะรู้ว่า <strong>ข้อความหาย</strong> หรือ <strong>บอร์ดรีเซ็ต</strong> (seq กลับเป็น 0)</li><li><strong>LWT (Last Will and Testament)</strong>: บอกล่วงหน้าตอน connect ว่า "ถ้าฉันหายไปเฉย ๆ ให้ประกาศ <code>offline</code> ที่ topic status" — dashboard จึงรู้ว่า node ไหนตาย</li><li><strong>Retain</strong>: broker เก็บข้อความล่าสุดของ topic ไว้ ผู้ที่ subscribe ทีหลังได้รับทันที (เหมาะกับ status ไม่เหมาะกับ telemetry)</li><li><strong>QoS</strong>: PubSubClient <strong>publish ได้แค่ QoS 0</strong> แต่ subscribe เป็น QoS 1 ได้ ถ้าต้องการ publish QoS 1 ให้ใช้ไลบรารี <code>esp-mqtt</code> ของ ESP-IDF (<code>#include &quot;mqtt_client.h&quot;</code>)</li><li><strong>ArduinoJson 7</strong>: ใช้ <code>JsonDocument</code> ตัวเดียว (ไม่ต้องกำหนดขนาดแบบ v6), <code>doc[&quot;key&quot;].is&lt;T&gt;()</code> ตรวจชนิดก่อนอ่าน — <strong>คำสั่งที่ผิดรูปแบบต้องไม่ทำให้บอร์ดค้าง</strong></li><li><code>mqtt.setBufferSize(512)</code> — ค่าเริ่มต้น 256 ไบต์ ข้อความ JSON ที่ยาวกว่านั้นจะ publish ไม่ออก<strong>โดยไม่มี error ให้เห็น</strong></li></ul>
+<h3>เตรียม broker</h3>
+<p>บน Pi (หรือ notebook) ที่มี Docker:</p>
+<div class="snip"><span class="lang">shell</span><button class="copy" type="button">คัดลอก</button><pre><code>mkdir -p mosquitto &amp;&amp; printf &quot;listener 1883\nallow_anonymous true\n&quot; &gt; mosquitto/mosquitto.conf</code></pre></div>
+<div class="snip"><span class="lang">shell</span><button class="copy" type="button">คัดลอก</button><pre><code>docker run -d --name mosquitto -p 1883:1883 -v &quot;$PWD/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf&quot; eclipse-mosquitto:2</code></pre></div>
+<div class="note"><code>allow_anonymous true</code> ใช้สำหรับซ้อมในเครือข่ายของทีมเท่านั้น</div>
+<h3>ลองทำ</h3>
+<ol><li>แก้ <code>WIFI_SSID</code>, <code>WIFI_PASS</code>, <code>MQTT_HOST</code> (IP ของ Pi) และ <code>TEAM</code> ใน <a href="#code-L08_mqtt_json">L08_mqtt_json.ino</a> แล้วอัปโหลด — Serial Monitor จะแสดง <code>node_id</code> และ cmd topic</li><li>ดูข้อมูลจากเครื่องที่มี <code>mosquitto_sub</code>:
+<div class="snip"><span class="lang">shell</span><button class="copy" type="button">คัดลอก</button><pre><code>mosquitto_sub -h 192.168.1.10 -t &quot;tgr2026/#&quot; -v</code></pre></div></li><li>ส่งคำสั่ง (แทน <code>esp32-xxxxxx</code> ด้วย node_id จริง):
+<div class="snip"><span class="lang">shell</span><button class="copy" type="button">คัดลอก</button><pre><code>mosquitto_pub -h 192.168.1.10 -t &quot;tgr2026/canet/esp32-xxxxxx/cmd&quot; -m &#x27;{&quot;beep&quot;:2,&quot;led&quot;:true,&quot;lot_id&quot;:&quot;L-002&quot;}&#x27;</code></pre></div>
+<p>บอร์ดจะดัง 2 ครั้ง ติด LED และส่ง telemetry ทันทีด้วย <code>lot_id</code> ใหม่</p></li><li><strong>ทดสอบ LWT:</strong> ถอดสาย USB ของบอร์ด — ภายใน ~20 วินาที (keepalive 15 วินาที × 1.5) <code>mosquitto_sub</code> จะเห็น <code>status offline</code></li><li><strong>ทดสอบความทน:</strong> หยุด broker (<code>docker stop mosquitto</code>) 30 วินาทีแล้วเปิดใหม่ — บอร์ดต้องกลับมาส่งเองได้</li></ol>
+<p>ตัวอย่าง telemetry:</p>
+<div class="snip"><span class="lang">JSON</span><button class="copy" type="button">คัดลอก</button><pre><code>{&quot;lot_id&quot;:&quot;L-001&quot;,&quot;node_id&quot;:&quot;esp32-a1b2c3&quot;,&quot;ts&quot;:&quot;2026-11-17T07:05:09Z&quot;,&quot;seq&quot;:42,&quot;uptime_ms&quot;:210345,&quot;temp_c&quot;:31.4,&quot;soil_mv&quot;:1210,&quot;knob_mv&quot;:1650,&quot;rssi&quot;:-58}</code></pre></div>
+<h3>แบบฝึกหัด</h3>
+<ol><li>เพิ่ม <code>soil_pct</code> ที่ calibrate แล้วจากบทที่ 5 และส่งเฉพาะค่าที่ผ่าน median filter</li><li>เพิ่มคำสั่ง <code>{&quot;calibrate&quot;:&quot;dry&quot;}</code> / <code>{&quot;calibrate&quot;:&quot;wet&quot;}</code> ให้บอร์ดจำค่า ZX-SOIL ปัจจุบันเป็นจุด calibrate (เก็บถาวรด้วย <code>Preferences</code> เพื่อไม่หายตอนรีเซ็ต)</li><li>ถ้า MQTT หลุด ให้ <strong>เก็บข้อความไว้ในบัฟเฟอร์วงกลม</strong> (เช่น 50 ข้อความ) แล้วส่งย้อนหลังเมื่อกลับมาเชื่อมต่อ — <code>ts</code> ต้องเป็นเวลาที่วัด ไม่ใช่เวลาที่ส่ง</li><li>เขียน Python script (paho-mqtt) บน notebook ที่ subscribe <code>telemetry</code> แล้วพิมพ์เตือนเมื่อ <code>seq</code> ขาดหาย หรือเมื่อ node ใดไม่ส่งข้อมูลเกิน 3 รอบ</li></ol><div class="code" id="code-L08_mqtt_json"><h3>โค้ด · <code>L08_mqtt_json</code></h3><details class="sketch" open><summary><span class="fn">L08_mqtt_json.ino</span><span class="ln">167 บรรทัด</span></summary><div class="bar"><button class="copy" type="button">คัดลอก</button><button class="dl" type="button" data-name="L08_mqtt_json.ino">ดาวน์โหลด</button><a href="https://github.com/apisake/tgr2026-team-coach/tree/main/tutorial/L08_mqtt_json" target="_blank" rel="noopener">GitHub</a></div><pre><code><span class="c">// L08 · MQTT + JSON: ส่งค่าเซ็นเซอร์พร้อม lot_id + ts, LWT, รับคำสั่งจาก broker</span>
+<span class="c">//</span>
+<span class="c">// topic (แก้ให้ตรงกับ Data Contract ของทีม):</span>
+<span class="c">//   tgr2026/&lt;team&gt;/&lt;node_id&gt;/telemetry   ESP32 → broker   ค่าเซ็นเซอร์ทุก PUBLISH_MS</span>
+<span class="c">//   tgr2026/&lt;team&gt;/&lt;node_id&gt;/status      ESP32 → broker   &quot;online&quot; / &quot;offline&quot; (retain, LWT)</span>
+<span class="c">//   tgr2026/&lt;team&gt;/&lt;node_id&gt;/cmd         broker → ESP32   {&quot;led&quot;:true} {&quot;beep&quot;:2} {&quot;lot_id&quot;:&quot;L-002&quot;} {&quot;interval_ms&quot;:2000}</span>
+<span class="p">
+#include &lt;WiFi.h&gt;</span>
+<span class="p">#include &lt;PubSubClient.h&gt;</span>
+<span class="p">#include &lt;ArduinoJson.h&gt;</span>
+<span class="p">#include &lt;time.h&gt;</span>
+
+<span class="c">// ---- ตั้งค่า ----</span>
+<span class="k">const</span> <span class="k">char</span> *WIFI_SSID = <span class="s">&quot;YOUR_SSID&quot;</span>;
+<span class="k">const</span> <span class="k">char</span> *WIFI_PASS = <span class="s">&quot;YOUR_PASSWORD&quot;</span>;
+<span class="k">const</span> <span class="k">char</span> *MQTT_HOST = <span class="s">&quot;192.168.1.10&quot;</span>;  <span class="c">// IP ของ Pi ที่รัน Mosquitto</span>
+<span class="k">const</span> <span class="k">int</span> MQTT_PORT = <span class="n">1883</span>;
+<span class="k">const</span> <span class="k">char</span> *MQTT_USER = <span class="k">nullptr</span>;          <span class="c">// ใส่ถ้า broker ตั้งรหัสผ่าน</span>
+<span class="k">const</span> <span class="k">char</span> *MQTT_PASS = <span class="k">nullptr</span>;
+<span class="k">const</span> <span class="k">char</span> *TEAM = <span class="s">&quot;canet&quot;</span>;
+<span class="k">const</span> <span class="k">char</span> *NTP_SERVER = <span class="s">&quot;pool.ntp.org&quot;</span>;  <span class="c">// หรือ IP ของ Pi</span>
+<span class="k">const</span> <span class="k">char</span> *TZ_THAILAND = <span class="s">&quot;&lt;+07&gt;-7&quot;</span>;
+
+<span class="c">// ---- ขา ----</span>
+<span class="k">const</span> <span class="k">int</span> LED_PIN = <span class="n">18</span>;
+<span class="k">const</span> <span class="k">int</span> BUZZER_PIN = <span class="n">26</span>;
+<span class="k">const</span> <span class="k">int</span> KNOB_PIN = <span class="n">36</span>;
+<span class="k">const</span> <span class="k">int</span> TEMP_PIN = <span class="n">32</span>;  <span class="c">// ZX-MCP9701</span>
+<span class="k">const</span> <span class="k">int</span> SOIL_PIN = <span class="n">33</span>;  <span class="c">// ZX-SOIL</span>
+
+WiFiClient net;
+PubSubClient mqtt(net);
+
+<span class="k">String</span> nodeId, topicTelemetry, topicStatus, topicCmd;
+<span class="k">String</span> lotId = <span class="s">&quot;L-001&quot;</span>;
+<span class="k">unsigned</span> <span class="k">long</span> publishMs = <span class="n">5000</span>;
+<span class="k">unsigned</span> <span class="k">long</span> seq = <span class="n">0</span>;
+<span class="k">unsigned</span> <span class="k">long</span> lastPublish = <span class="n">0</span>, lastMqttTry = <span class="n">0</span>, lastWifiCheck = <span class="n">0</span>;
+<span class="k">int</span> beepsLeft = <span class="n">0</span>;
+
+<span class="k">bool</span> timeValid() { <span class="k">return</span> time(<span class="k">nullptr</span>) &gt; <span class="n">1704067200</span>; }
+
+<span class="c">// ISO 8601 แบบ UTC เช่น 2026-11-17T07:05:09Z (ฝั่ง Python แปลงเขตเวลาต่อเอง)</span>
+<span class="k">String</span> isoTimeUtc() {
+  time_t now = time(<span class="k">nullptr</span>);
+  <span class="k">struct</span> tm tm;
+  gmtime_r(&amp;now, &amp;tm);
+  <span class="k">char</span> buf[<span class="n">25</span>];
+  strftime(buf, <span class="k">sizeof</span>(buf), <span class="s">&quot;%Y-%m-%dT%H:%M:%SZ&quot;</span>, &amp;tm);
+  <span class="k">return</span> buf;
+}
+
+<span class="k">void</span> onMessage(<span class="k">char</span> *topic, <span class="k">byte</span> *payload, <span class="k">unsigned</span> <span class="k">int</span> len) {
+  JsonDocument cmd;
+  DeserializationError err = deserializeJson(cmd, payload, len);
+  <span class="k">if</span> (err) {
+    Serial.printf(<span class="s">&quot;cmd JSON ผิดรูปแบบ: %s\n&quot;</span>, err.c_str());
+    <span class="k">return</span>;
+  }
+  Serial.print(<span class="s">&quot;cmd: &quot;</span>);
+  serializeJson(cmd, Serial);
+  Serial.println();
+
+  <span class="k">if</span> (cmd[<span class="s">&quot;led&quot;</span>].is&lt;<span class="k">bool</span>&gt;()) digitalWrite(LED_PIN, cmd[<span class="s">&quot;led&quot;</span>].as&lt;<span class="k">bool</span>&gt;() ? HIGH : LOW);
+  <span class="k">if</span> (cmd[<span class="s">&quot;beep&quot;</span>].is&lt;<span class="k">int</span>&gt;()) beepsLeft = constrain(cmd[<span class="s">&quot;beep&quot;</span>].as&lt;<span class="k">int</span>&gt;(), <span class="n">0</span>, <span class="n">10</span>) * <span class="n">2</span>;
+  <span class="k">if</span> (cmd[<span class="s">&quot;lot_id&quot;</span>].is&lt;<span class="k">const</span> <span class="k">char</span> *&gt;()) lotId = cmd[<span class="s">&quot;lot_id&quot;</span>].as&lt;<span class="k">const</span> <span class="k">char</span> *&gt;();
+  <span class="k">if</span> (cmd[<span class="s">&quot;interval_ms&quot;</span>].is&lt;<span class="k">unsigned</span> <span class="k">long</span>&gt;())
+    publishMs = constrain(cmd[<span class="s">&quot;interval_ms&quot;</span>].as&lt;<span class="k">unsigned</span> <span class="k">long</span>&gt;(), <span class="n">500UL</span>, <span class="n">600000UL</span>);
+  lastPublish = <span class="n">0</span>;  <span class="c">// ส่งค่าทันทีเพื่อยืนยันว่ารับคำสั่งแล้ว</span>
+}
+
+<span class="k">void</span> maintainWifi() {
+  <span class="k">if</span> (millis() - lastWifiCheck &lt; <span class="n">10000</span>) <span class="k">return</span>;
+  lastWifiCheck = millis();
+  <span class="k">if</span> (WiFi.status() != WL_CONNECTED) {
+    WiFi.disconnect();
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+  }
+}
+
+<span class="k">void</span> maintainMqtt() {
+  <span class="k">if</span> (mqtt.connected() || WiFi.status() != WL_CONNECTED) <span class="k">return</span>;
+  <span class="k">if</span> (millis() - lastMqttTry &lt; <span class="n">5000</span>) <span class="k">return</span>;  <span class="c">// ลองใหม่ทุก 5 วินาที ไม่ถี่เกินไป</span>
+  lastMqttTry = millis();
+
+  Serial.printf(<span class="s">&quot;เชื่อม MQTT %s:%d ... &quot;</span>, MQTT_HOST, MQTT_PORT);
+  <span class="c">// LWT: ถ้าบอร์ดหายไปเฉย ๆ broker จะประกาศ &quot;offline&quot; แทนให้</span>
+  <span class="k">bool</span> ok = mqtt.connect(nodeId.c_str(), MQTT_USER, MQTT_PASS,
+                         topicStatus.c_str(), <span class="n">1</span>, <span class="k">true</span>, <span class="s">&quot;offline&quot;</span>);
+  <span class="k">if</span> (ok) {
+    Serial.println(<span class="s">&quot;สำเร็จ&quot;</span>);
+    mqtt.publish(topicStatus.c_str(), <span class="s">&quot;online&quot;</span>, <span class="k">true</span>);
+    mqtt.subscribe(topicCmd.c_str(), <span class="n">1</span>);
+  } <span class="k">else</span> {
+    Serial.printf(<span class="s">&quot;ไม่สำเร็จ (state %d)\n&quot;</span>, mqtt.state());
+  }
+}
+
+<span class="k">void</span> publishTelemetry() {
+  <span class="k">int</span> tempMv = analogReadMilliVolts(TEMP_PIN);
+  <span class="k">int</span> soilMv = analogReadMilliVolts(SOIL_PIN);
+
+  JsonDocument doc;
+  doc[<span class="s">&quot;lot_id&quot;</span>] = lotId;
+  doc[<span class="s">&quot;node_id&quot;</span>] = nodeId;
+  <span class="k">if</span> (timeValid()) doc[<span class="s">&quot;ts&quot;</span>] = isoTimeUtc();
+  <span class="k">else</span> doc[<span class="s">&quot;ts&quot;</span>] = <span class="k">nullptr</span>;  <span class="c">// ยังไม่ sync เวลา — ฝั่งรับใช้เวลาที่ได้รับแทน</span>
+  doc[<span class="s">&quot;seq&quot;</span>] = seq++;
+  doc[<span class="s">&quot;uptime_ms&quot;</span>] = millis();
+  doc[<span class="s">&quot;temp_c&quot;</span>] = round((tempMv - <span class="n">400</span>) / <span class="n">19.5</span> * <span class="n">10</span>) / <span class="n">10.0</span>;
+  doc[<span class="s">&quot;soil_mv&quot;</span>] = soilMv;
+  doc[<span class="s">&quot;knob_mv&quot;</span>] = analogReadMilliVolts(KNOB_PIN);
+  doc[<span class="s">&quot;rssi&quot;</span>] = WiFi.RSSI();
+
+  <span class="k">char</span> buf[<span class="n">384</span>];
+  <span class="k">size_t</span> n = serializeJson(doc, buf);
+  <span class="k">bool</span> ok = mqtt.publish(topicTelemetry.c_str(), buf, n);
+  Serial.printf(<span class="s">&quot;%s %s\n&quot;</span>, ok ? <span class="s">&quot;→&quot;</span> : <span class="s">&quot;✗&quot;</span>, buf);
+}
+
+<span class="k">void</span> updateBeep() {
+  <span class="k">static</span> <span class="k">unsigned</span> <span class="k">long</span> last = <span class="n">0</span>;
+  <span class="k">if</span> (beepsLeft == <span class="n">0</span> || millis() - last &lt; <span class="n">150</span>) <span class="k">return</span>;
+  last = millis();
+  ledcWrite(BUZZER_PIN, beepsLeft % <span class="n">2</span> == <span class="n">0</span> ? <span class="n">128</span> : <span class="n">0</span>);
+  beepsLeft--;
+}
+
+<span class="k">void</span> setup() {
+  Serial.begin(<span class="n">115200</span>);
+  pinMode(LED_PIN, OUTPUT);
+  ledcAttach(BUZZER_PIN, <span class="n">2500</span>, <span class="n">8</span>);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(<span class="k">true</span>);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  configTzTime(TZ_THAILAND, NTP_SERVER);
+
+  <span class="c">// node_id จาก MAC address 3 ไบต์ท้าย ไม่ซ้ำกันในแต่ละบอร์ด</span>
+  <span class="k">uint8_t</span> mac[<span class="n">6</span>];
+  WiFi.macAddress(mac);
+  <span class="k">char</span> id[<span class="n">16</span>];
+  snprintf(id, <span class="k">sizeof</span>(id), <span class="s">&quot;esp32-%02x%02x%02x&quot;</span>, mac[<span class="n">3</span>], mac[<span class="n">4</span>], mac[<span class="n">5</span>]);
+  nodeId = id;
+  <span class="k">String</span> base = <span class="k">String</span>(<span class="s">&quot;tgr2026/&quot;</span>) + TEAM + <span class="s">&quot;/&quot;</span> + nodeId;
+  topicTelemetry = base + <span class="s">&quot;/telemetry&quot;</span>;
+  topicStatus = base + <span class="s">&quot;/status&quot;</span>;
+  topicCmd = base + <span class="s">&quot;/cmd&quot;</span>;
+  Serial.printf(<span class="s">&quot;node_id = %s\ncmd topic = %s\n&quot;</span>, nodeId.c_str(), topicCmd.c_str());
+
+  mqtt.setServer(MQTT_HOST, MQTT_PORT);
+  mqtt.setCallback(onMessage);
+  mqtt.setBufferSize(<span class="n">512</span>);
+  mqtt.setKeepAlive(<span class="n">15</span>);
+}
+
+<span class="k">void</span> loop() {
+  maintainWifi();
+  maintainMqtt();
+  mqtt.loop();
+  updateBeep();
+
+  <span class="k">if</span> (mqtt.connected() &amp;&amp; (lastPublish == <span class="n">0</span> || millis() - lastPublish &gt;= publishMs)) {
+    lastPublish = millis();
+    publishTelemetry();
+  }
+}</code></pre></details></div></section>
+
+<section id="L09_drying_controller" data-lesson="L09_drying_controller"><h2><span class="n">9</span><span class="t">งานรวม: ตัวควบคุมตู้อบเมล็ดกาแฟ</span><label class="done"><input type="checkbox" data-done="L09_drying_controller"> เรียนแล้ว</label></h2><p>รวมทุกบทเป็น <strong>firmware template</strong> ตามเป้าหมาย Phase 1 ในแผน: Wi-Fi + MQTT + NTP + JSON + reconnect + config แยกไฟล์ + drying controller ใช้เป็นจุดเริ่มต้นของโค้ด ESP32 ในวันแข่งได้ — เปลี่ยนเซ็นเซอร์และกฎควบคุมตามโจทย์จริง โครงที่เหลือใช้ต่อได้ทั้งหมด</p>
+<div class="note">ตัวเลขใน <code>config.h</code> (45 °C, ความชื้นเป้าหมาย 12%) เป็นค่าตั้งต้นสำหรับซ้อมเท่านั้น ต้องตรวจกับงานค้นคว้า R3/R4 ก่อนใช้นำเสนอ</div>
+<h3>ระบบทำอะไร</h3>
+<div class="snip"><button class="copy" type="button">คัดลอก</button><pre><code>ZX-MCP9701 (K7) ─┐                          ┌─▶ ZX-LED K5 = ฮีตเตอร์ (เปิด/ปิด แบบ hysteresis)
+ZX-SOIL    (K8) ─┼─▶ อ่าน + กรอง ─▶ control ─┼─▶ ZX-LED K4 = พัดลม (PWM ตามความร้อนเกิน)
+BUTTON  (GPIO0) ─┘                          ├─▶ เสียง + LED สถานะ
+                                            ├─▶ OLED
+                       MQTT cmd ──▶         └─▶ MQTT telemetry / event / status</code></pre></div>
+<div class="tbl"><table><thead><tr><th>สถานะ</th><th>ฮีตเตอร์</th><th>พัดลม</th><th>เปลี่ยนเมื่อ</th></tr></thead><tbody><tr><td><code>idle</code></td><td>ปิด</td><td>ปิด</td><td>กดปุ่ม หรือ <code>{&quot;start&quot;:true}</code> → <code>drying</code></td></tr><tr><td><code>drying</code></td><td>hysteresis รอบ setpoint</td><td>≥ <code>FAN_MIN_DUTY</code> และเร่งเมื่อร้อนเกิน</td><td>ความชื้น ≤ เป้า → <code>done</code> · ร้อนเกิน <code>TEMP_MAX_C</code> หรือสายเซ็นเซอร์หลุด → <code>fault</code> · กดปุ่ม → <code>idle</code></td></tr><tr><td><code>done</code></td><td>ปิด</td><td>ปิด</td><td>ส่ง <code>lot_id</code> ใหม่ → <code>idle</code></td></tr><tr><td><code>fault</code></td><td><strong>ปิดทันที</strong></td><td>เต็มที่ถ้าร้อนเกิน</td><td>กดปุ่ม หรือ <code>{&quot;reset&quot;:true}</code> → <code>idle</code></td></tr></tbody></table></div>
+<h3>สิ่งใหม่ในบทนี้</h3>
+<ul><li><strong>State machine</strong> — ทุกการตัดสินใจขึ้นกับสถานะปัจจุบัน และทุกครั้งที่เปลี่ยนสถานะจะส่ง <code>event</code> ให้ service บันทึกเป็นประวัติของล็อต (traceability)</li><li><strong>Hysteresis</strong> — เปิดฮีตเตอร์เมื่อต่ำกว่า <code>SP − band</code> ปิดเมื่อสูงกว่า <code>SP + band</code> ระหว่างนั้นคงสถานะเดิม รีเลย์จึงไม่สลับถี่จนพัง</li><li><strong>Fail-safe</strong> — ฮีตเตอร์ปิดตอนบูตเสมอ, เซ็นเซอร์อ่านค่าผิดปกติ = fault, เปลี่ยน <code>lot_id</code> ระหว่างอบไม่ได้</li><li><strong>Watchdog</strong> — ถ้า <code>loop()</code> ค้างเกิน 15 วินาที บอร์ดรีเซ็ตตัวเองและกลับสู่สถานะปลอดภัย</li><li><strong>ตั้งค่าแยกไฟล์</strong> — แก้ <code>config.h</code> ไฟล์เดียว ไม่ต้องแตะโค้ดควบคุม</li><li><strong>Topic <code>event</code></strong> แยกจาก <code>telemetry</code> — ข้อมูลต่อเนื่องกับเหตุการณ์สำคัญมีการใช้งานต่างกัน</li></ul>
+<h3>Topic และคำสั่ง</h3>
+<div class="tbl"><table><thead><tr><th>Topic</th><th>ตัวอย่าง</th></tr></thead><tbody><tr><td><code>.../telemetry</code></td><td><code>{&quot;lot_id&quot;:&quot;L-001&quot;,&quot;node_id&quot;:&quot;esp32-a1b2c3&quot;,&quot;ts&quot;:&quot;2026-11-17T07:05:09Z&quot;,&quot;seq&quot;:18,&quot;state&quot;:&quot;drying&quot;,&quot;temp_c&quot;:44.2,&quot;moist_pct&quot;:31.5,&quot;setpoint_c&quot;:45,&quot;target_pct&quot;:12,&quot;heater&quot;:true,&quot;fan_duty&quot;:80,&quot;rssi&quot;:-61,&quot;uptime_ms&quot;:95211}</code></td></tr><tr><td><code>.../event</code></td><td><code>{&quot;lot_id&quot;:&quot;L-001&quot;,...,&quot;event&quot;:&quot;state&quot;,&quot;state&quot;:&quot;fault&quot;,&quot;detail&quot;:&quot;over temp&quot;}</code></td></tr><tr><td><code>.../status</code></td><td><code>online</code> / <code>offline</code> (retain + LWT)</td></tr><tr><td><code>.../cmd</code></td><td><code>{&quot;lot_id&quot;:&quot;L-002&quot;}</code> <code>{&quot;start&quot;:true}</code> <code>{&quot;stop&quot;:true}</code> <code>{&quot;reset&quot;:true}</code> <code>{&quot;setpoint_c&quot;:42,&quot;band_c&quot;:1.5,&quot;target_pct&quot;:12}</code></td></tr></tbody></table></div>
+<h3>ลองทำ</h3>
+<ol><li>แก้ <code>config.h</code> (Wi-Fi, IP ของ broker, ค่า calibrate ZX-SOIL จากบทที่ 5) แล้วอัปโหลด</li><li>เปิด <code>mosquitto_sub -h &lt;pi&gt; -t &quot;tgr2026/#&quot; -v</code> ไว้ตลอด</li><li>กด BUTTON เพื่อเริ่มอบ — ZX-LED ฮีตเตอร์ติดเพราะอุณหภูมิห้องต่ำกว่า setpoint</li><li>ส่ง <code>{&quot;setpoint_c&quot;:28}</code> แล้วกำหัววัดอุณหภูมิ — ฮีตเตอร์ดับ และพัดลมสว่างขึ้นเมื่ออุณหภูมิสูงขึ้น</li><li>ถอดสาย ZX-MCP9701 ระหว่างอบ → <code>fault: temp sensor</code> และมีเสียงเตือน แล้วกด BUTTON เพื่อรีเซ็ต</li><li>ให้ ZX-SOIL แห้งลง (ยกออกจากน้ำ/ดินชื้น) จนต่ำกว่า <code>target_pct</code> → <code>done</code></li></ol>
+<h3>แบบฝึกหัด (ซ้อมแบบโจทย์วันแข่ง)</h3>
+<ol><li><strong>เปลี่ยนเซ็นเซอร์:</strong> ใช้ SHT3x จากบทที่ 6 วัดอุณหภูมิและความชื้นสัมพัทธ์ของอากาศในตู้แทน ZX-MCP9701 และเพิ่ม <code>rh_pct</code> ใน telemetry</li><li><strong>น้ำหนัก:</strong> เพิ่ม HX711 + load cell (ไลบรารี <code>HX711</code> ของ bogde) แล้วคำนวณ % น้ำหนักที่ลดลงจากตอนเริ่มอบ — ใช้เป็นเงื่อนไข <code>done</code> แทน ZX-SOIL</li><li><strong>ปิดลูปจาก AI/service:</strong> ให้ service ฝั่ง Python ส่ง <code>setpoint_c</code> ใหม่ทุก 1 นาทีตามสภาพอากาศ (ฝนตก → ลด setpoint, เปิดพัดลมแรงขึ้น)</li><li><strong>PID:</strong> เปลี่ยนฮีตเตอร์จาก on/off เป็น PWM แบบ PID (ใบ้: เริ่มจาก P อย่างเดียว แล้วเพิ่ม I) เปรียบเทียบกราฟอุณหภูมิกับ hysteresis</li><li><strong>Surprise จำลอง:</strong> ให้เพื่อนเปลี่ยน Data Contract กลางทาง (เช่น เปลี่ยนชื่อ field <code>temp_c</code> → <code>air_temp</code>, เพิ่ม <code>farm_id</code>) แล้วจับเวลาว่าแก้และทดสอบเสร็จภายในกี่นาที</li></ol><div class="code" id="code-L09_drying_controller"><h3>โค้ด · <code>L09_drying_controller</code></h3><details class="sketch" open><summary><span class="fn">L09_drying_controller.ino</span><span class="ln">347 บรรทัด</span></summary><div class="bar"><button class="copy" type="button">คัดลอก</button><button class="dl" type="button" data-name="L09_drying_controller.ino">ดาวน์โหลด</button><a href="https://github.com/apisake/tgr2026-team-coach/tree/main/tutorial/L09_drying_controller" target="_blank" rel="noopener">GitHub</a></div><pre><code><span class="c">// L09 · งานรวม: ตัวควบคุมตู้อบเมล็ดกาแฟ (Drying Controller)</span>
+<span class="c">//</span>
+<span class="c">//   อ่านอุณหภูมิ + ความชื้น → ควบคุมฮีตเตอร์ (hysteresis) + พัดลม (PWM)</span>
+<span class="c">//   → แจ้งเตือน → แสดงบน OLED → ส่ง MQTT พร้อม lot_id + ts → รับคำสั่งจาก service</span>
+<span class="c">//</span>
+<span class="c">// สถานะ:  IDLE --(ปุ่ม/cmd start)--&gt; DRYING --(ความชื้น ≤ เป้า)--&gt; DONE</span>
+<span class="c">//                                     |  อุณหภูมิเกิน/เซ็นเซอร์เสีย</span>
+<span class="c">//                                     v</span>
+<span class="c">//                                   FAULT --(cmd reset / ปุ่ม)--&gt; IDLE</span>
+<span class="c">//</span>
+<span class="c">// ตั้งค่าทั้งหมดอยู่ใน config.h</span>
+<span class="p">
+#include &lt;WiFi.h&gt;</span>
+<span class="p">#include &lt;PubSubClient.h&gt;</span>
+<span class="p">#include &lt;ArduinoJson.h&gt;</span>
+<span class="p">#include &lt;U8g2lib.h&gt;</span>
+<span class="p">#include &lt;Wire.h&gt;</span>
+<span class="p">#include &lt;time.h&gt;</span>
+<span class="p">#include &lt;esp_task_wdt.h&gt;</span>
+<span class="p">#include &quot;config.h&quot;</span>
+
+<span class="k">enum</span> State { IDLE, DRYING, DONE, FAULT };
+<span class="k">const</span> <span class="k">char</span> *STATE_NAME[] = {<span class="s">&quot;idle&quot;</span>, <span class="s">&quot;drying&quot;</span>, <span class="s">&quot;done&quot;</span>, <span class="s">&quot;fault&quot;</span>};
+
+<span class="c">// ---- สถานะของระบบ ----</span>
+State state = IDLE;
+<span class="k">String</span> lotId = <span class="s">&quot;L-001&quot;</span>;
+<span class="k">String</span> faultReason;
+<span class="k">float</span> setpointC = DEFAULT_SETPOINT_C;
+<span class="k">float</span> bandC = DEFAULT_BAND_C;
+<span class="k">float</span> targetPct = DEFAULT_TARGET_PCT;
+
+<span class="k">float</span> tempC = NAN, moistPct = NAN;
+<span class="k">int</span> tempMv = <span class="n">0</span>, moistMv = <span class="n">0</span>;
+<span class="k">bool</span> heaterOn = <span class="k">false</span>;
+<span class="k">int</span> fanDuty = <span class="n">0</span>;
+
+<span class="c">// ---- เครือข่าย ----</span>
+WiFiClient net;
+PubSubClient mqtt(net);
+<span class="k">String</span> nodeId, topicTelemetry, topicStatus, topicEvent, topicCmd;
+<span class="k">unsigned</span> <span class="k">long</span> seq = <span class="n">0</span>;
+<span class="k">unsigned</span> <span class="k">long</span> lastPublish = <span class="n">0</span>, lastMqttTry = <span class="n">0</span>, lastWifiCheck = <span class="n">0</span>;
+
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE, SCL_PIN, SDA_PIN);
+
+<span class="c">// =====================================================================</span>
+<span class="c">// เซ็นเซอร์</span>
+<span class="c">// =====================================================================</span>
+
+<span class="k">int</span> readMv(<span class="k">int</span> pin) {
+  <span class="k">const</span> <span class="k">int</span> N = <span class="n">9</span>;
+  <span class="k">int</span> v[N];
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; N; i++) v[i] = analogReadMilliVolts(pin);
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; N; i++) {
+    <span class="k">int</span> x = v[i], j = i - <span class="n">1</span>;
+    <span class="k">while</span> (j &gt;= <span class="n">0</span> &amp;&amp; v[j] &gt; x) { v[j + <span class="n">1</span>] = v[j]; j--; }
+    v[j + <span class="n">1</span>] = x;
+  }
+  <span class="k">return</span> v[N / <span class="n">2</span>];
+}
+
+<span class="k">void</span> readSensors() {
+  <span class="k">static</span> <span class="k">float</span> emaT = NAN, emaM = NAN;
+  tempMv = readMv(TEMP_PIN);
+  moistMv = readMv(MOIST_PIN);
+  <span class="k">float</span> t = (tempMv - <span class="n">400</span>) / <span class="n">19.5</span>;
+  <span class="k">float</span> m = constrain(<span class="n">100.0</span> * (moistMv - MOIST_DRY_MV) / (MOIST_WET_MV - MOIST_DRY_MV), <span class="n">0</span>, <span class="n">100</span>);
+  emaT = isnan(emaT) ? t : <span class="n">0.2</span> * t + <span class="n">0.8</span> * emaT;
+  emaM = isnan(emaM) ? m : <span class="n">0.1</span> * m + <span class="n">0.9</span> * emaM;
+  tempC = emaT;
+  moistPct = emaM;
+}
+
+<span class="c">// MCP9701 ให้ ≥ 400 mV ที่ 0 °C ถ้าต่ำกว่า 150 mV แปลว่าสายหลุด</span>
+<span class="k">bool</span> tempSensorOk() { <span class="k">return</span> tempMv &gt; <span class="n">150</span> &amp;&amp; tempMv &lt; <span class="n">3000</span>; }
+
+<span class="c">// =====================================================================</span>
+<span class="c">// เครือข่าย</span>
+<span class="c">// =====================================================================</span>
+
+<span class="k">bool</span> timeValid() { <span class="k">return</span> time(<span class="k">nullptr</span>) &gt; <span class="n">1704067200</span>; }
+
+<span class="k">String</span> isoTimeUtc() {
+  time_t now = time(<span class="k">nullptr</span>);
+  <span class="k">struct</span> tm tm;
+  gmtime_r(&amp;now, &amp;tm);
+  <span class="k">char</span> buf[<span class="n">25</span>];
+  strftime(buf, <span class="k">sizeof</span>(buf), <span class="s">&quot;%Y-%m-%dT%H:%M:%SZ&quot;</span>, &amp;tm);
+  <span class="k">return</span> buf;
+}
+
+<span class="k">void</span> addHeader(JsonDocument &amp;doc) {
+  doc[<span class="s">&quot;lot_id&quot;</span>] = lotId;
+  doc[<span class="s">&quot;node_id&quot;</span>] = nodeId;
+  <span class="k">if</span> (timeValid()) doc[<span class="s">&quot;ts&quot;</span>] = isoTimeUtc();
+  <span class="k">else</span> doc[<span class="s">&quot;ts&quot;</span>] = <span class="k">nullptr</span>;
+  doc[<span class="s">&quot;seq&quot;</span>] = seq++;
+}
+
+<span class="k">void</span> publishJson(<span class="k">const</span> <span class="k">String</span> &amp;topic, JsonDocument &amp;doc) {
+  <span class="k">char</span> buf[<span class="n">512</span>];
+  <span class="k">size_t</span> n = serializeJson(doc, buf);
+  mqtt.publish(topic.c_str(), buf, n);
+  Serial.println(buf);
+}
+
+<span class="k">void</span> publishTelemetry() {
+  <span class="k">if</span> (!mqtt.connected()) <span class="k">return</span>;
+  JsonDocument doc;
+  addHeader(doc);
+  doc[<span class="s">&quot;state&quot;</span>] = STATE_NAME[state];
+  doc[<span class="s">&quot;temp_c&quot;</span>] = round(tempC * <span class="n">10</span>) / <span class="n">10.0</span>;
+  doc[<span class="s">&quot;moist_pct&quot;</span>] = round(moistPct * <span class="n">10</span>) / <span class="n">10.0</span>;
+  doc[<span class="s">&quot;setpoint_c&quot;</span>] = setpointC;
+  doc[<span class="s">&quot;target_pct&quot;</span>] = targetPct;
+  doc[<span class="s">&quot;heater&quot;</span>] = heaterOn;
+  doc[<span class="s">&quot;fan_duty&quot;</span>] = fanDuty;
+  doc[<span class="s">&quot;rssi&quot;</span>] = WiFi.RSSI();
+  doc[<span class="s">&quot;uptime_ms&quot;</span>] = millis();
+  publishJson(topicTelemetry, doc);
+}
+
+<span class="c">// เหตุการณ์สำคัญ (เปลี่ยนสถานะ, fault) ส่งแยก topic เพื่อให้ service บันทึกเป็นประวัติของล็อต</span>
+<span class="k">void</span> publishEvent(<span class="k">const</span> <span class="k">char</span> *event, <span class="k">const</span> <span class="k">String</span> &amp;detail = <span class="s">&quot;&quot;</span>) {
+  <span class="k">if</span> (!mqtt.connected()) <span class="k">return</span>;
+  JsonDocument doc;
+  addHeader(doc);
+  doc[<span class="s">&quot;event&quot;</span>] = event;
+  doc[<span class="s">&quot;state&quot;</span>] = STATE_NAME[state];
+  <span class="k">if</span> (detail.length()) doc[<span class="s">&quot;detail&quot;</span>] = detail;
+  publishJson(topicEvent, doc);
+}
+
+<span class="c">// =====================================================================</span>
+<span class="c">// การควบคุม</span>
+<span class="c">// =====================================================================</span>
+
+<span class="k">void</span> beep(<span class="k">int</span> ms) {
+  ledcWrite(BUZZER_PIN, <span class="n">128</span>);
+  delay(ms);  <span class="c">// สั้นมาก ยอมให้บล็อกได้</span>
+  ledcWrite(BUZZER_PIN, <span class="n">0</span>);
+}
+
+<span class="k">void</span> setState(State s, <span class="k">const</span> <span class="k">String</span> &amp;detail = <span class="s">&quot;&quot;</span>) {
+  <span class="k">if</span> (s == state) <span class="k">return</span>;
+  state = s;
+  <span class="k">if</span> (s == FAULT) faultReason = detail;
+  Serial.printf(<span class="s">&quot;state → %s %s\n&quot;</span>, STATE_NAME[s], detail.c_str());
+  publishEvent(<span class="s">&quot;state&quot;</span>, detail);
+  lastPublish = <span class="n">0</span>;  <span class="c">// ส่ง telemetry ทันที</span>
+  beep(s == FAULT ? <span class="n">400</span> : <span class="n">80</span>);
+}
+
+<span class="k">void</span> control() {
+  <span class="k">if</span> (state == DRYING) {
+    <span class="k">if</span> (!tempSensorOk()) setState(FAULT, <span class="s">&quot;temp sensor&quot;</span>);
+    <span class="k">else</span> <span class="k">if</span> (tempC &gt; TEMP_MAX_C) setState(FAULT, <span class="s">&quot;over temp&quot;</span>);
+    <span class="k">else</span> <span class="k">if</span> (moistPct &lt;= targetPct) setState(DONE, <span class="s">&quot;target reached&quot;</span>);
+  }
+
+  <span class="k">if</span> (state == DRYING) {
+    <span class="c">// hysteresis: อยู่ในแถบ ±band ให้คงสถานะเดิม ฮีตเตอร์จึงไม่สลับถี่</span>
+    <span class="k">if</span> (tempC &lt; setpointC - bandC) heaterOn = <span class="k">true</span>;
+    <span class="k">else</span> <span class="k">if</span> (tempC &gt; setpointC + bandC) heaterOn = <span class="k">false</span>;
+    <span class="c">// พัดลม: หมุนเบาตลอด และเร่งเมื่อร้อนเกินเป้า (proportional)</span>
+    <span class="k">float</span> over = tempC - setpointC;
+    fanDuty = constrain(FAN_MIN_DUTY + (<span class="k">int</span>)(over * <span class="n">40</span>), FAN_MIN_DUTY, <span class="n">255</span>);
+  } <span class="k">else</span> {
+    heaterOn = <span class="k">false</span>;
+    fanDuty = (state == FAULT &amp;&amp; tempC &gt; TEMP_MAX_C) ? <span class="n">255</span> : <span class="n">0</span>;  <span class="c">// ร้อนเกิน → เป่าระบาย</span>
+  }
+
+  digitalWrite(HEATER_PIN, heaterOn ? HIGH : LOW);
+  ledcWrite(FAN_PIN, fanDuty);
+}
+
+<span class="k">void</span> startDrying() {
+  <span class="k">if</span> (state == FAULT) <span class="k">return</span>;
+  setState(DRYING, <span class="s">&quot;start&quot;</span>);
+}
+
+<span class="k">void</span> stopDrying() {
+  setState(IDLE, <span class="s">&quot;stop&quot;</span>);
+}
+
+<span class="c">// =====================================================================</span>
+<span class="c">// MQTT</span>
+<span class="c">// =====================================================================</span>
+
+<span class="k">void</span> onMessage(<span class="k">char</span> *topic, <span class="k">byte</span> *payload, <span class="k">unsigned</span> <span class="k">int</span> len) {
+  JsonDocument cmd;
+  <span class="k">if</span> (deserializeJson(cmd, payload, len)) {
+    publishEvent(<span class="s">&quot;cmd_error&quot;</span>, <span class="s">&quot;invalid json&quot;</span>);
+    <span class="k">return</span>;
+  }
+  <span class="k">if</span> (cmd[<span class="s">&quot;lot_id&quot;</span>].is&lt;<span class="k">const</span> <span class="k">char</span> *&gt;()) {
+    <span class="k">if</span> (state == DRYING) {
+      publishEvent(<span class="s">&quot;cmd_error&quot;</span>, <span class="s">&quot;stop before changing lot_id&quot;</span>);
+    } <span class="k">else</span> {
+      lotId = cmd[<span class="s">&quot;lot_id&quot;</span>].as&lt;<span class="k">const</span> <span class="k">char</span> *&gt;();
+      <span class="k">if</span> (state == DONE) setState(IDLE, <span class="s">&quot;new lot&quot;</span>);
+    }
+  }
+  <span class="k">if</span> (cmd[<span class="s">&quot;setpoint_c&quot;</span>].is&lt;<span class="k">float</span>&gt;()) setpointC = constrain(cmd[<span class="s">&quot;setpoint_c&quot;</span>].as&lt;<span class="k">float</span>&gt;(), <span class="n">25.0f</span>, TEMP_MAX_C - <span class="n">5</span>);
+  <span class="k">if</span> (cmd[<span class="s">&quot;band_c&quot;</span>].is&lt;<span class="k">float</span>&gt;()) bandC = constrain(cmd[<span class="s">&quot;band_c&quot;</span>].as&lt;<span class="k">float</span>&gt;(), <span class="n">0.5f</span>, <span class="n">10.0f</span>);
+  <span class="k">if</span> (cmd[<span class="s">&quot;target_pct&quot;</span>].is&lt;<span class="k">float</span>&gt;()) targetPct = constrain(cmd[<span class="s">&quot;target_pct&quot;</span>].as&lt;<span class="k">float</span>&gt;(), <span class="n">0.0f</span>, <span class="n">100.0f</span>);
+  <span class="k">if</span> (cmd[<span class="s">&quot;start&quot;</span>] == <span class="k">true</span>) startDrying();
+  <span class="k">if</span> (cmd[<span class="s">&quot;stop&quot;</span>] == <span class="k">true</span>) stopDrying();
+  <span class="k">if</span> (cmd[<span class="s">&quot;reset&quot;</span>] == <span class="k">true</span> &amp;&amp; state == FAULT) setState(IDLE, <span class="s">&quot;reset&quot;</span>);
+  lastPublish = <span class="n">0</span>;
+}
+
+<span class="k">void</span> maintainNetwork() {
+  <span class="k">if</span> (millis() - lastWifiCheck &gt; <span class="n">10000</span>) {
+    lastWifiCheck = millis();
+    <span class="k">if</span> (WiFi.status() != WL_CONNECTED) {
+      WiFi.disconnect();
+      WiFi.begin(WIFI_SSID, WIFI_PASS);
+    }
+  }
+  <span class="k">if</span> (!mqtt.connected() &amp;&amp; WiFi.status() == WL_CONNECTED &amp;&amp; millis() - lastMqttTry &gt; <span class="n">5000</span>) {
+    lastMqttTry = millis();
+    <span class="k">if</span> (mqtt.connect(nodeId.c_str(), <span class="k">nullptr</span>, <span class="k">nullptr</span>, topicStatus.c_str(), <span class="n">1</span>, <span class="k">true</span>, <span class="s">&quot;offline&quot;</span>)) {
+      mqtt.publish(topicStatus.c_str(), <span class="s">&quot;online&quot;</span>, <span class="k">true</span>);
+      mqtt.subscribe(topicCmd.c_str(), <span class="n">1</span>);
+      publishEvent(<span class="s">&quot;boot_or_reconnect&quot;</span>);
+    }
+  }
+  mqtt.loop();
+}
+
+<span class="c">// =====================================================================</span>
+<span class="c">// ปุ่มและจอ</span>
+<span class="c">// =====================================================================</span>
+
+<span class="k">void</span> handleButton() {
+  <span class="k">static</span> <span class="k">bool</span> last = HIGH;
+  <span class="k">static</span> <span class="k">unsigned</span> <span class="k">long</span> lastChange = <span class="n">0</span>;
+  <span class="k">bool</span> b = digitalRead(BUTTON_PIN);
+  <span class="k">if</span> (b != last &amp;&amp; millis() - lastChange &gt; <span class="n">30</span>) {
+    lastChange = millis();
+    last = b;
+    <span class="k">if</span> (b == LOW) {
+      <span class="k">if</span> (state == DRYING) stopDrying();
+      <span class="k">else</span> <span class="k">if</span> (state == FAULT) setState(IDLE, <span class="s">&quot;reset&quot;</span>);
+      <span class="k">else</span> startDrying();
+    }
+  }
+}
+
+<span class="k">void</span> drawScreen() {
+  oled.clearBuffer();
+  oled.setFont(u8g2_font_6x10_tf);
+
+  oled.setCursor(<span class="n">0</span>, <span class="n">9</span>);
+  oled.printf(<span class="s">&quot;%-8s %s&quot;</span>, lotId.c_str(), STATE_NAME[state]);
+  oled.drawStr(<span class="n">98</span>, <span class="n">9</span>, WiFi.status() == WL_CONNECTED ? (mqtt.connected() ? <span class="s">&quot;MQTT&quot;</span> : <span class="s">&quot;WiFi&quot;</span>) : <span class="s">&quot;----&quot;</span>);
+  oled.drawHLine(<span class="n">0</span>, <span class="n">12</span>, <span class="n">128</span>);
+
+  oled.setFont(u8g2_font_logisoso16_tr);
+  oled.setCursor(<span class="n">0</span>, <span class="n">32</span>);
+  oled.printf(<span class="s">&quot;%.1fC&quot;</span>, tempC);
+  oled.setCursor(<span class="n">66</span>, <span class="n">32</span>);
+  oled.printf(<span class="s">&quot;%.0f%%&quot;</span>, moistPct);
+
+  oled.setFont(u8g2_font_6x10_tf);
+  oled.setCursor(<span class="n">0</span>, <span class="n">44</span>);
+  oled.printf(<span class="s">&quot;SP %.0f+-%.0f&quot;</span>, setpointC, bandC);
+  oled.setCursor(<span class="n">66</span>, <span class="n">44</span>);
+  oled.printf(<span class="s">&quot;TG %.0f%%&quot;</span>, targetPct);
+
+  oled.setCursor(<span class="n">0</span>, <span class="n">58</span>);
+  <span class="k">if</span> (state == FAULT) {
+    oled.printf(<span class="s">&quot;FAULT: %s&quot;</span>, faultReason.c_str());
+  } <span class="k">else</span> {
+    oled.printf(<span class="s">&quot;HEAT %s&quot;</span>, heaterOn ? <span class="s">&quot;ON &quot;</span> : <span class="s">&quot;off&quot;</span>);
+    oled.setCursor(<span class="n">66</span>, <span class="n">58</span>);
+    oled.printf(<span class="s">&quot;FAN %d%%&quot;</span>, fanDuty * <span class="n">100</span> / <span class="n">255</span>);
+  }
+  oled.sendBuffer();
+}
+
+<span class="c">// =====================================================================</span>
+
+<span class="k">void</span> setup() {
+  Serial.begin(<span class="n">115200</span>);
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT);
+  pinMode(HEATER_PIN, OUTPUT);
+  digitalWrite(HEATER_PIN, LOW);  <span class="c">// ปลอดภัยไว้ก่อน: ฮีตเตอร์ปิดตอนบูต</span>
+  ledcAttach(FAN_PIN, <span class="n">25000</span>, <span class="n">8</span>);  <span class="c">// 25 kHz พ้นช่วงที่หูได้ยิน</span>
+  ledcAttach(BUZZER_PIN, <span class="n">2500</span>, <span class="n">8</span>);
+
+  oled.setI2CAddress(<span class="n">0x3C</span> * <span class="n">2</span>);
+  oled.begin();
+
+  WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(<span class="k">true</span>);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  configTzTime(<span class="s">&quot;&lt;+07&gt;-7&quot;</span>, NTP_SERVER);
+
+  <span class="k">uint8_t</span> mac[<span class="n">6</span>];
+  WiFi.macAddress(mac);
+  <span class="k">char</span> id[<span class="n">16</span>];
+  snprintf(id, <span class="k">sizeof</span>(id), <span class="s">&quot;esp32-%02x%02x%02x&quot;</span>, mac[<span class="n">3</span>], mac[<span class="n">4</span>], mac[<span class="n">5</span>]);
+  nodeId = id;
+  <span class="k">String</span> base = <span class="k">String</span>(<span class="s">&quot;tgr2026/&quot;</span>) + TEAM + <span class="s">&quot;/&quot;</span> + nodeId;
+  topicTelemetry = base + <span class="s">&quot;/telemetry&quot;</span>;
+  topicStatus = base + <span class="s">&quot;/status&quot;</span>;
+  topicEvent = base + <span class="s">&quot;/event&quot;</span>;
+  topicCmd = base + <span class="s">&quot;/cmd&quot;</span>;
+  Serial.printf(<span class="s">&quot;node_id = %s\n&quot;</span>, nodeId.c_str());
+
+  mqtt.setServer(MQTT_HOST, MQTT_PORT);
+  mqtt.setCallback(onMessage);
+  mqtt.setBufferSize(<span class="n">512</span>);
+  mqtt.setKeepAlive(<span class="n">15</span>);
+
+  <span class="c">// Watchdog: ถ้า loop() ค้างเกิน 15 วินาที ให้รีเซ็ตบอร์ด (ฮีตเตอร์จะปิดตอนบูต)</span>
+  esp_task_wdt_config_t wdt = {.timeout_ms = <span class="n">15000</span>, .idle_core_mask = <span class="n">0</span>, .trigger_panic = <span class="k">true</span>};
+  <span class="k">if</span> (esp_task_wdt_reconfigure(&amp;wdt) != ESP_OK) esp_task_wdt_init(&amp;wdt);
+  esp_task_wdt_add(NULL);
+
+  readSensors();
+}
+
+<span class="k">void</span> loop() {
+  esp_task_wdt_reset();
+  maintainNetwork();
+  handleButton();
+
+  <span class="k">static</span> <span class="k">unsigned</span> <span class="k">long</span> lastControl = <span class="n">0</span>;
+  <span class="k">if</span> (millis() - lastControl &gt;= <span class="n">500</span>) {
+    lastControl = millis();
+    readSensors();
+    control();
+    drawScreen();
+    <span class="c">// LED: ติดค้าง = กำลังอบ, กระพริบ = fault, ดับ = idle/done</span>
+    digitalWrite(LED_PIN, state == DRYING || (state == FAULT &amp;&amp; (millis() / <span class="n">500</span>) % <span class="n">2</span>));
+  }
+
+  <span class="k">if</span> (lastPublish == <span class="n">0</span> || millis() - lastPublish &gt;= PUBLISH_MS) {
+    lastPublish = millis();
+    publishTelemetry();
+  }
+}</code></pre></details><details class="sketch" open><summary><span class="fn">config.h</span><span class="ln">34 บรรทัด</span></summary><div class="bar"><button class="copy" type="button">คัดลอก</button><button class="dl" type="button" data-name="config.h">ดาวน์โหลด</button><a href="https://github.com/apisake/tgr2026-team-coach/tree/main/tutorial/L09_drying_controller" target="_blank" rel="noopener">GitHub</a></div><pre><code><span class="c">// ตั้งค่าของ L09 — แก้ไฟล์นี้ไฟล์เดียวก่อนอัปโหลด</span>
+<span class="p">#pragma once</span>
+
+<span class="c">// ---- เครือข่าย ----</span>
+<span class="p">#define WIFI_SSID      &quot;YOUR_SSID&quot;</span>
+<span class="p">#define WIFI_PASS      &quot;YOUR_PASSWORD&quot;</span>
+<span class="p">#define MQTT_HOST      &quot;192.168.1.10&quot;   // IP ของ Pi ที่รัน Mosquitto</span>
+<span class="p">#define MQTT_PORT      1883</span>
+<span class="p">#define NTP_SERVER     &quot;pool.ntp.org&quot;   // ไม่มีอินเทอร์เน็ต → IP ของ Pi</span>
+<span class="p">#define TEAM           &quot;canet&quot;</span>
+
+<span class="c">// ---- ขา (ตรวจกับผล L00) ----</span>
+<span class="p">#define LED_PIN        18   // สถานะ</span>
+<span class="p">#define BUTTON_PIN     0    // เริ่ม/หยุดการอบ</span>
+<span class="p">#define BUZZER_PIN     26</span>
+<span class="p">#define TEMP_PIN       32   // K7 ZX-MCP9701 อุณหภูมิในตู้อบ</span>
+<span class="p">#define MOIST_PIN      33   // K8 ZX-SOIL แทนเซ็นเซอร์ความชื้นเมล็ด</span>
+<span class="p">#define FAN_PIN        19   // K4 ZX-LED แทนพัดลม (PWM)</span>
+<span class="p">#define HEATER_PIN     23   // K5 ZX-LED แทนรีเลย์ฮีตเตอร์</span>
+<span class="p">#define SDA_PIN        21</span>
+<span class="p">#define SCL_PIN        22</span>
+
+<span class="c">// ---- ค่าเริ่มต้นของการควบคุม (เปลี่ยนได้ทาง MQTT cmd) ----</span>
+<span class="p">#define DEFAULT_SETPOINT_C   45.0  // อุณหภูมิอากาศเป้าหมาย — ตรวจกับงานค้นคว้า R3</span>
+<span class="p">#define DEFAULT_BAND_C       2.0   // hysteresis: เปิดฮีตเตอร์ &lt; SP−band, ปิด &gt; SP+band</span>
+<span class="p">#define DEFAULT_TARGET_PCT   12.0  // ความชื้นเป้าหมาย — ตรวจกับงานค้นคว้า R4</span>
+<span class="p">#define TEMP_MAX_C           60.0  // เกินนี้ = FAULT ตัดฮีตเตอร์ทันที</span>
+<span class="p">#define FAN_MIN_DUTY         80    // พัดลมหมุนเบา ๆ ตลอดการอบ (0–255)</span>
+
+<span class="c">// ---- calibrate ZX-SOIL (วัดจริงตามบทที่ 5) ----</span>
+<span class="p">#define MOIST_DRY_MV   300</span>
+<span class="p">#define MOIST_WET_MV   2500</span>
+<span class="p">
+#define PUBLISH_MS     5000</span></code></pre></details></div></section>
+
+</div></main>
+
+<footer><div class="wrap">สร้างจากโฟลเดอร์ <code>tutorial/</code> ด้วย <code>web/build_tutorial.py</code> · ภาควิชาคอมพิวเตอร์ คณะวิทยาศาสตร์ มหาวิทยาลัยศิลปากร · ทีม CANET, muzik.click(), muzik.scroll()</div></footer>
+
+<script>
+// คัดลอก / ดาวน์โหลดโค้ด
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const pre = btn.closest(".snip, details")?.querySelector("pre");
+  if (!pre) return;
+  const text = pre.textContent;
+  if (btn.classList.contains("copy")) {
+    navigator.clipboard.writeText(text).then(() => {
+      const old = btn.textContent; btn.textContent = "คัดลอกแล้ว";
+      setTimeout(() => (btn.textContent = old), 1200);
+    });
+  } else if (btn.classList.contains("dl")) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text + "\n"], { type: "text/plain" }));
+    a.download = btn.dataset.name;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+});
+
+// ติ๊ก "เรียนแล้ว" เก็บในเบราว์เซอร์ของแต่ละคน
+const KEY = "ipst-tutorial-done";
+let done = {};
+try { done = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (_) {}
+const boxes = [...document.querySelectorAll("input[data-done]")];
+function refresh() {
+  const n = boxes.filter((b) => b.checked).length;
+  document.getElementById("prog-text").textContent = `เรียนแล้ว ${n} / ${boxes.length} บท`;
+  document.getElementById("prog-bar").style.width = `${(100 * n) / boxes.length}%`;
+  boxes.forEach((b) => document.querySelector(`nav a[data-lesson="${b.dataset.done}"]`)?.classList.toggle("done", b.checked));
+}
+boxes.forEach((b) => {
+  b.checked = !!done[b.dataset.done];
+  b.addEventListener("change", () => {
+    done[b.dataset.done] = b.checked;
+    try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (_) {}
+    refresh();
+  });
+});
+refresh();
+
+// ไฮไลต์บทที่กำลังอ่านในแถบนำทาง
+const links = new Map([...document.querySelectorAll("nav.toc a")].map((a) => [a.getAttribute("href").slice(1), a]));
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((en) => {
+    if (!en.isIntersecting) return;
+    links.forEach((a) => a.classList.remove("here"));
+    const a = links.get(en.target.id);
+    if (a) { a.classList.add("here"); a.scrollIntoView({ block: "nearest", inline: "nearest" }); }
+  });
+}, { rootMargin: "-30% 0px -65% 0px" });
+document.querySelectorAll("main section").forEach((s) => io.observe(s));
+</script>
+</body>
+</html>

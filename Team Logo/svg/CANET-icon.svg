@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>CANET</title>
+  <defs>
+    <mask id="CANET-i-ears" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <circle cx="256" cy="206" r="114" fill="#000"/>
+    </mask>
+    <mask id="CANET-i-head" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <circle cx="214" cy="200" r="11" fill="#000"/>
+      <circle cx="298" cy="200" r="11" fill="#000"/>
+      <rect x="244" y="128" width="24" height="24" transform="rotate(45 256 140)" fill="#000"/>
+      <path d="M300 300 Q314 350 360 362" stroke="#000" stroke-width="44" stroke-linecap="round" fill="none"/>
+      <path d="M212 300 L204 318" stroke="#000" stroke-width="44" stroke-linecap="round" fill="none"/>
+    </mask>
+  </defs>
+  <g mask="url(#CANET-i-ears)" fill="#40826D">
+    <path d="M178 130 C112 112 70 160 76 222 C82 284 130 318 176 300 Z"/>
+    <path d="M334 130 C400 112 442 160 436 222 C430 284 382 318 336 300 Z"/>
+  </g>
+  <g mask="url(#CANET-i-head)">
+    <circle cx="256" cy="206" r="98" fill="#40826D"/>
+    <path d="M284 250 V350 Q284 432 200 432 A20 20 0 0 1 200 392 Q228 392 228 344 V250 Z" fill="#40826D"/>
+  </g>
+  <circle cx="152" cy="412" r="16" stroke="#40826D" stroke-width="12" fill="none"/>
+  <path d="M300 300 Q314 350 360 362" stroke="#A8D5C2" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M212 300 L204 318" stroke="#A8D5C2" stroke-width="22" stroke-linecap="round" fill="none"/>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>muzik.click()</title>
+  <defs>
+    <mask id="muzik-click-i-ears" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <rect x="164" y="138" width="184" height="294" rx="92" fill="#000"/>
+    </mask>
+    <mask id="muzik-click-i-body" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <rect x="171" y="243" width="170" height="10" fill="#000"/>
+      <rect x="251" y="140" width="10" height="108" fill="#000"/>
+      <rect x="245" y="182" width="22" height="46" rx="11" fill="#000"/>
+    </mask>
+  </defs>
+  <g fill="#FF5A4F" mask="url(#muzik-click-i-ears)">
+    <circle cx="190" cy="146" r="46"/>
+    <circle cx="322" cy="146" r="46"/>
+  </g>
+  <g fill="#FF5A4F" mask="url(#muzik-click-i-body)"><rect x="176" y="150" width="160" height="270" rx="80"/></g>
+  <path d="M256 432 C256 478 318 482 334 450 C348 422 392 424 404 452" stroke="#FF5A4F" stroke-width="13" stroke-linecap="round" fill="none"/>
+  <path d="M176 248 V230 A80 80 0 0 1 251 150.2 V248 Z" fill="#FFB3AD" mask="url(#muzik-click-i-body)"/>
+  <g stroke="#FF5A4F" stroke-width="14" stroke-linecap="round">
+    <path d="M132 226 L96 214"/>
+    <path d="M138 268 L104 286"/>
+    <path d="M140 186 L118 160"/>
+  </g>
+</svg>

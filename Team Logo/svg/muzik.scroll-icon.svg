@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>muzik.scroll()</title>
+  <defs>
+    <mask id="muzik-scroll-i-ears" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <rect x="164" y="138" width="184" height="294" rx="92" fill="#000"/>
+    </mask>
+    <mask id="muzik-scroll-i-body" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <rect x="171" y="243" width="170" height="10" fill="#000"/>
+      <rect x="251" y="140" width="10" height="108" fill="#000"/>
+      <rect x="239" y="170" width="34" height="70" rx="17" fill="#000"/>
+    </mask>
+  </defs>
+  <g fill="#7B5CFF" mask="url(#muzik-scroll-i-ears)">
+    <circle cx="190" cy="146" r="46"/>
+    <circle cx="322" cy="146" r="46"/>
+  </g>
+  <g fill="#7B5CFF" mask="url(#muzik-scroll-i-body)"><rect x="176" y="150" width="160" height="270" rx="80"/></g>
+  <path d="M256 432 C256 478 318 482 334 450 C348 422 392 424 404 452" stroke="#7B5CFF" stroke-width="13" stroke-linecap="round" fill="none"/>
+  <rect x="245" y="176" width="22" height="58" rx="11" fill="#C9BDFF"/>
+  <g stroke="#000" stroke-width="0"/>
+  <g stroke="#7B5CFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M368 214 L392 190 L416 214"/>
+    <path d="M368 316 L392 340 L416 316"/>
+    <path d="M392 236 V294" stroke-dasharray="0.1 29"/>
+  </g>
+</svg>

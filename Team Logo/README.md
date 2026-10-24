@@ -15,3 +15,8 @@
   - `*-badge-light.svg` / `*-badge-dark.svg` สี่เหลี่ยมมุมมน สำหรับโปรไฟล์ สติกเกอร์ สไลด์
 - `png/` ไฟล์พร้อมใช้ (icon/badge 1024×1024, lockup ความละเอียด 2x, พื้นโปร่งใสยกเว้นแบบ dark/badge)
 - `source/make_logos.py` สคริปต์สร้างโลโก้ (ฟอนต์ Futura Bold, Menlo Bold, Avenir Next Demi Bold ของ macOS)
+
+## Zoom profile
+- `Zoom/png/zoom-<ทีม>-light.png` / `-dark.png` รูปโปรไฟล์ 1024×1024 (1:1) ของแต่ละทีม และ `zoom-all-teams-*` สำหรับบัญชีกลางของภาควิชา
+- ใช้พื้นที่เต็มสี่เหลี่ยม: ชื่อมหาวิทยาลัยด้านบน โลโก้ตัวใหญ่ ชื่อทีมด้านล่าง
+- สร้างใหม่: `python3 source/make_zoom.py Zoom/svg`

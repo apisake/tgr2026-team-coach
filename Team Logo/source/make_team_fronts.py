@@ -3,10 +3,6 @@ import math, os, sys
 from make_shirts import (AVENIR, CORAL, FUTURA, MENLO, SHIRT, TEAMS, VIOLET, VIRIDIAN,
                          _draw, icon, shirt, svg, team_color, text, width)
 
-OUT = sys.argv[1]
-os.makedirs(OUT, exist_ok=True)
-
-
 def name_mark(key, name, x, y, color, c, canet_size=34, mono_size=24):
     """Team name in its own voice: CANET in Futura, muzik.*() in Menlo."""
     tc = team_color(c, color)
@@ -76,18 +72,21 @@ def emblem(key, name, c, color):
 
 CONCEPTS = {"T1": hero, "T2": wordmark, "T3": emblem}
 
-for cid, fn in CONCEPTS.items():
-    for color in ("white", "black"):
-        body = '<rect width="1800" height="740" fill="#E8ECEA"/>'
-        for i, (key, name, c) in enumerate(TEAMS):
-            dx = i * 600
-            panel = shirt(color) + fn(key, name, c, color)
-            body += f'<g transform="translate({dx} 20)">{panel}</g>'
-            body += text(MENLO if key != "CANET" else FUTURA, name, dx + 300, 708, 20,
-                         "#4E5D58", "middle", 0.1 if key == "CANET" else 0)
-            single = svg(600, 680, f'<g transform="translate(0 10)">{panel}</g>', f"TGR2026 {cid} {name} {color}")
-            with open(os.path.join(OUT, f"team-{cid}-{key}-{color}.svg"), "w") as fh:
-                fh.write(single)
-        with open(os.path.join(OUT, f"team-{cid}-{color}-lineup.svg"), "w") as fh:
-            fh.write(svg(1800, 740, body, f"TGR2026 team fronts {cid} {color}"))
-print("ok", len(os.listdir(OUT)))
+if __name__ == "__main__":
+    OUT = sys.argv[1]
+    os.makedirs(OUT, exist_ok=True)
+    for cid, fn in CONCEPTS.items():
+        for color in ("white", "black"):
+            body = '<rect width="1800" height="740" fill="#E8ECEA"/>'
+            for i, (key, name, c) in enumerate(TEAMS):
+                dx = i * 600
+                panel = shirt(color) + fn(key, name, c, color)
+                body += f'<g transform="translate({dx} 20)">{panel}</g>'
+                body += text(MENLO if key != "CANET" else FUTURA, name, dx + 300, 708, 20,
+                             "#4E5D58", "middle", 0.1 if key == "CANET" else 0)
+                single = svg(600, 680, f'<g transform="translate(0 10)">{panel}</g>', f"TGR2026 {cid} {name} {color}")
+                with open(os.path.join(OUT, f"team-{cid}-{key}-{color}.svg"), "w") as fh:
+                    fh.write(single)
+            with open(os.path.join(OUT, f"team-{cid}-{color}-lineup.svg"), "w") as fh:
+                fh.write(svg(1800, 740, body, f"TGR2026 team fronts {cid} {color}"))
+    print("ok", len(os.listdir(OUT)))

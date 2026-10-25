@@ -9,6 +9,7 @@ import csv, os, subprocess, sys, tempfile
 from make_design_a_v2 import BACK, FRONT, SLEEVE, a3_svg
 
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+MARKS = {"M": "male", "F": "female"}   # optional roster column: gender symbol after the name
 TEAM_KEYS = {"CANET": "CANET", "muzik.click()": "muzik.click", "muzik.click": "muzik.click",
              "muzik.scroll()": "muzik.scroll", "muzik.scroll": "muzik.scroll"}
 
@@ -44,7 +45,7 @@ def main(roster_csv, out):
             color = color.strip()
             path = os.path.abspath(os.path.join(out, "svg", f"a3-{r['id']}-{color}.svg"))
             with open(path, "w") as fh:
-                fh.write(a3_svg(name, key, r["role"].strip(), color, tag=r["id"].upper()))
+                fh.write(a3_svg(name, key, r["role"].strip(), color, tag=r["id"].upper(), mark=MARKS.get((r.get("mark") or "").strip().upper())))
             by_color.setdefault(color, []).append(path)
             rows.append([r["id"], name, r["team"], r["role"], color, cm(BACK), cm(FRONT), cm(SLEEVE)])
     for color, paths in by_color.items():

@@ -48,15 +48,66 @@ def front_print(color):
     return g
 
 
-def back_print(color, name, role, key):
-    """Back, 260 x 300 mm: personal name as the hero, role, the three teams, the event."""
+def gender_mark(kind, cx, cy, r, col, w):
+    """Male / female symbol drawn as strokes, circle centred on (cx, cy)."""
+    g = f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r:.2f}" fill="none" stroke="{col}" stroke-width="{w:.2f}"/>'
+    if kind == "female":
+        y0, y1, yc = cy + r, cy + r + 1.15 * r, cy + r + 0.6 * r
+        g += (f'<path d="M{cx:.2f} {y0:.2f} V{y1:.2f} M{cx - 0.6 * r:.2f} {yc:.2f} H{cx + 0.6 * r:.2f}" '
+              f'stroke="{col}" stroke-width="{w:.2f}" stroke-linecap="square" fill="none"/>')
+    else:
+        d = 0.7071 * r
+        x0, y0, x1, y1 = cx + d, cy - d, cx + d + 0.95 * r, cy - d - 0.95 * r
+        h = 0.75 * r
+        g += (f'<path d="M{x0:.2f} {y0:.2f} L{x1:.2f} {y1:.2f} M{x1 - h:.2f} {y1:.2f} H{x1:.2f} V{y1 + h:.2f}" '
+              f'stroke="{col}" stroke-width="{w:.2f}" stroke-linecap="square" stroke-linejoin="miter" fill="none"/>')
+    return g
+
+
+# gender colours tuned per shirt: deeper on white, lighter and brighter on black
+MARK_COLORS = {
+    "white": {"male": "#2B72D6", "female": "#D63C86"},
+    "black": {"male": "#6AB0FF", "female": "#FF85BF"},
+}
+
+
+def mark_width(kind, r):
+    return 2 * r if kind == "female" else r + 0.7071 * r + 0.95 * r + 1
+
+
+def back_print(color, name, role, key, mark=None, mark_style="sup", mark_color="ink"):
+    """Back, 260 x 300 mm: personal name as the hero, role, the three teams, the event.
+
+    mark = "male" / "female" adds a gender symbol: after the name ("sup") or after the role ("role"),
+    in the text colour (mark_color="ink") or blue / pink (mark_color="gender").
+    """
     a, sub = ink(color)
+    mc = MARK_COLORS[color][mark] if (mark and mark_color == "gender") else None
     role_c = team_color(VIRIDIAN, color) if role == "COACH" else a
     g = text(AVENIR, "SILPAKORN UNIVERSITY", 130, 14, fit(AVENIR, "SILPAKORN UNIVERSITY", 13, 240, 0.22), a, "middle", 0.22)
-    g += text(DIN, name, 130, 112, fit(DIN, name, 120, 250, 0.03), a, "middle", 0.03)
+    if mark and mark_style == "sup":
+        r, gap = 13, 9
+        extra = gap + mark_width(mark, r)
+        fs = fit(DIN, name, 120, 250 - extra, 0.03)
+        nw = width(DIN, name, fs, 0.03)
+        x0 = 130 - (nw + extra) / 2
+        g += text(DIN, name, x0, 112, fs, a, "start", 0.03)
+        top = 112 - 0.72 * fs
+        cy = top + r if mark == "female" else top + 0.7071 * r + 0.95 * r   # symbol top = cap top
+        g += gender_mark(mark, x0 + nw + gap + r, cy, r, mc or a, 5)
+    else:
+        g += text(DIN, name, 130, 112, fit(DIN, name, 120, 250, 0.03), a, "middle", 0.03)
     rw = width(DIN, role, 40, 0.18)
-    g += (f'<path d="M40 142 H{130 - rw / 2 - 8:.1f} M{130 + rw / 2 + 8:.1f} 142 H220" stroke="{role_c}" stroke-width="1.6"/>'
-          + text(DIN, role, 130, 156, 40, role_c, "middle", 0.18))
+    if mark and mark_style == "role":
+        r, gap = 9, 7
+        mw = gap + mark_width(mark, r)
+        rx0 = 130 - (rw + mw) / 2
+        g += (f'<path d="M40 142 H{rx0 - 8:.1f} M{rx0 + rw + mw + 8:.1f} 142 H220" stroke="{role_c}" stroke-width="1.6"/>'
+              + text(DIN, role, rx0, 156, 40, role_c, "start", 0.18)
+              + gender_mark(mark, rx0 + rw + gap + r, 142, r, mc or role_c, 3.4))
+    else:
+        g += (f'<path d="M40 142 H{130 - rw / 2 - 8:.1f} M{130 + rw / 2 + 8:.1f} 142 H220" stroke="{role_c}" stroke-width="1.6"/>'
+              + text(DIN, role, 130, 156, 40, role_c, "middle", 0.18))
     for i, (k, n, c) in enumerate(TEAMS):
         cx = 50 + i * 80
         if k == key:   # the wearer's own team gets a ring
@@ -111,7 +162,7 @@ def place(inner, x, y, k=1.0):
 
 # ------------------------------------------------------------------ A3 sheet
 
-def a3_sheet(name, key, role, color, tag=None):
+def a3_sheet(name, key, role, color, tag=None, mark=None):
     """A3 transfer sheet in mm; print areas tinted with the shirt colour."""
     s = SHIRT[color]
     line = "#3B4A44"
@@ -122,7 +173,7 @@ def a3_sheet(name, key, role, color, tag=None):
     sx, sy = fx + FRONT[0] + 22, fy
     for (x, y, (w, h)) in ((bx, by, BACK), (fx, fy, FRONT), (sx, sy, SLEEVE)):
         g += f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="{s["fill"]}" stroke="#C9D1CD" stroke-width="0.4"/>'
-    g += place(back_print(color, name, role, key), bx, by)
+    g += place(back_print(color, name, role, key, mark=mark, mark_style="sup", mark_color="gender"), bx, by)
     g += place(front_print(color), fx, fy)
     g += place(sleeve_print(color, key), sx, sy)
     # dimensions (cm labels, 6 mm type)
@@ -168,13 +219,13 @@ def front_panel(color):
     return g
 
 
-def back_panel(color, name, role, key):
+def back_panel(color, name, role, key, mark=None):
     a, _ = ink(color)
     k = PX_PER_MM
     w, h = BACK[0] * k, BACK[1] * k
     neck = 80
     x0, y0 = 300 - w / 2, neck + 50 * k            # 5 cm below the neck seam
-    g = shirt(color, back=True) + place(back_print(color, name, role, key), x0, y0, k)
+    g = shirt(color, back=True) + place(back_print(color, name, role, key, mark=mark, mark_style="sup", mark_color="gender"), x0, y0, k)
     g += dim_h(x0, x0 + w, y0 - 10, cm(BACK[0]), a, 12)
     g += dim_v(y0, y0 + h, x0 + w + 10, cm(BACK[1]), a, 12)
     g += (f'<path d="M{x0 - 12} {neck} V{y0}" stroke="{a}" stroke-width="1.3" stroke-dasharray="4 3"/>'
@@ -207,12 +258,12 @@ def card(inner, dx):
             f'<g transform="translate({dx} 30)">{inner}</g>')
 
 
-def a3_svg(name, key, role, color, tag=None):
-    return svg(A3[0], A3[1], a3_sheet(name, key, role, color, tag), f"A3 sheet {name} {key} {role} {color}")
+def a3_svg(name, key, role, color, tag=None, mark=None):
+    return svg(A3[0], A3[1], a3_sheet(name, key, role, color, tag, mark), f"A3 sheet {name} {key} {role} {color}")
 
 
-def mockup_svg(name, key, role, color):
-    body = (card(front_panel(color), 0) + card(back_panel(color, name, role, key), 600)
+def mockup_svg(name, key, role, color, mark=None):
+    body = (card(front_panel(color), 0) + card(back_panel(color, name, role, key, mark), 600)
             + card(sleeve_panel(color, key), 1200))
     return svg(1800, 700, body, f"Design A v2 {name} {key} {role} {color}")
 

@@ -3,11 +3,12 @@
 Usage (from Team Logo/T-Shirt-v2):  python3 source/make_roster.py roster.csv roster
   roster/svg/a3-<id>-<colour>.svg   one A3 sheet per person and colour (for the print shop)
   roster/mockup/mockup-<id>-<colour>.svg   front / back / sleeve on the shirt with sizes
+  roster/mockup/clean-<id>-<colour>.svg    the same views without sizes, to judge the look
   roster/pdf/a3-<colour>.pdf        all sheets of that colour, one A3 page each
   roster/sizes.csv                  name, team, role, colour and the three print sizes
 """
 import csv, os, subprocess, sys, tempfile
-from make_design_a_v2 import BACK, FRONT, SLEEVE, a3_svg, mockup_svg
+from make_design_a_v2 import BACK, FRONT, SLEEVE, a3_svg, clean_svg, mockup_svg
 
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 MARKS = {"M": "male", "F": "female"}   # optional roster column: gender symbol after the name
@@ -51,6 +52,8 @@ def main(roster_csv, out):
                 fh.write(a3_svg(name, key, r["role"].strip(), color, tag=r["id"].upper(), mark=mark))
             with open(os.path.join(out, "mockup", f"mockup-{r['id']}-{color}.svg"), "w") as fh:
                 fh.write(mockup_svg(name, key, r["role"].strip(), color, mark=mark))
+            with open(os.path.join(out, "mockup", f"clean-{r['id']}-{color}.svg"), "w") as fh:
+                fh.write(clean_svg(name, key, r["role"].strip(), color, mark=mark))
             by_color.setdefault(color, []).append(path)
             rows.append([r["id"], name, r["team"], r["role"], color, cm(BACK), cm(FRONT), cm(SLEEVE)])
     for color, paths in by_color.items():

@@ -11,7 +11,7 @@
 | `spec/` | `python3 source/make_print_spec.py spec` · แผ่นสเปกงานสกรีนแบบ A (cm) |
 | `model/` | `python3 source/make_models.py model` · แบบ A บนหุ่นจำลอง |
 | `design-a/` | `python3 source/make_design_a_v2.py design-a/svg` · **แบบ A v2**: ชื่อรายคน แผ่น A3 ต่อคน และ mockup พร้อมขนาด |
-| `roster/` | `python3 source/make_roster.py roster.csv roster` · แผ่น A3 ของทุกคนใน `roster.csv` (SVG รายคน, PDF รวมแยกสีเสื้อ, `sizes.csv`) |
+| `roster/` | `python3 source/make_roster.py roster.csv roster` · แผ่น A3 ของทุกคนใน `roster.csv` (SVG รายคน, PDF รวมแยกสีเสื้อ, `sizes.csv`), `mockup/mockup-*` พร้อมขนาด และ `mockup/clean-*` แบบเสื้อเปล่าไม่มีเส้นวัด |
 | `slides-deck/` | ต้นฉบับสไลด์ "TGR2026 Design A v2" |
 
 แบบ A v2 (หน่วย mm ตามจริง): หลัง 26.0 × 30.0 cm · อกซ้าย 10.0 × 7.0 cm · แขนซ้าย 7.0 × 6.5 cm ทุกทีม

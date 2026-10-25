@@ -268,6 +268,25 @@ def mockup_svg(name, key, role, color, mark=None):
     return svg(1800, 700, body, f"Design A v2 {name} {key} {role} {color}")
 
 
+def clean_svg(name, key, role, color, mark=None):
+    """Front / back / left sleeve at true scale with no dimensions or enlarged detail: just the shirt."""
+    s = SHIRT[color]
+    k = PX_PER_MM
+    front = shirt(color) + place(front_print(color), 395 - FRONT[0] * k / 2, 150, k)
+    back = shirt(color, back=True) + place(
+        back_print(color, name, role, key, mark=mark, mark_style="sup", mark_color="gender"),
+        300 - BACK[0] * k / 2, 80 + 50 * k, k)
+    ks, hem = SLEEVE_PX_PER_MM, 446
+    sleeve = (f'<path d="M150 150 L450 150 L490 470 L110 470 Z" fill="{s["fill"]}" stroke="{s["edge"]}" '
+              f'stroke-width="3" stroke-linejoin="round"/>'
+              f'<path d="M114 {hem} L486 {hem}" stroke="{s["edge"]}" stroke-width="3"/>'
+              + place(sleeve_print(color, key), 300 - SLEEVE[0] * ks / 2, hem - 40 * ks - SLEEVE[1] * ks, ks))
+    body = ""
+    for i, (inner, label) in enumerate(((front, "FRONT"), (back, "BACK"), (sleeve, "LEFT SLEEVE"))):
+        body += card(inner, i * 600) + text(AVENIR, label, i * 600 + 300, 676, 15, "#9AA6A1", "middle", 0.3)
+    return svg(1800, 700, body, f"Design A v2 clean {name} {key} {role} {color}")
+
+
 if __name__ == "__main__":
     OUT = sys.argv[1]
     os.makedirs(OUT, exist_ok=True)

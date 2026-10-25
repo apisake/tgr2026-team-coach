@@ -2,11 +2,12 @@
 
 Usage (from Team Logo/T-Shirt-v2):  python3 source/make_roster.py roster.csv roster
   roster/svg/a3-<id>-<colour>.svg   one A3 sheet per person and colour (for the print shop)
+  roster/mockup/mockup-<id>-<colour>.svg   front / back / sleeve on the shirt with sizes
   roster/pdf/a3-<colour>.pdf        all sheets of that colour, one A3 page each
   roster/sizes.csv                  name, team, role, colour and the three print sizes
 """
 import csv, os, subprocess, sys, tempfile
-from make_design_a_v2 import BACK, FRONT, SLEEVE, a3_svg
+from make_design_a_v2 import BACK, FRONT, SLEEVE, a3_svg, mockup_svg
 
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 MARKS = {"M": "male", "F": "female"}   # optional roster column: gender symbol after the name
@@ -35,17 +36,21 @@ def to_pdf(svg_paths, pdf_path):
 def main(roster_csv, out):
     os.makedirs(os.path.join(out, "svg"), exist_ok=True)
     os.makedirs(os.path.join(out, "pdf"), exist_ok=True)
+    os.makedirs(os.path.join(out, "mockup"), exist_ok=True)
     by_color, rows = {}, []
     for r in csv.DictReader(open(roster_csv, encoding="utf-8")):
         name = r["name"].strip().upper()
         if len(name.replace(".", "")) > 5:
-            raise SystemExit(f"{name}: more than 5 letters")
+            print(f"warning: {name} has more than 5 letters; it is shrunk to fit 25 cm")
         key = TEAM_KEYS[r["team"].strip()]
         for color in r["colors"].split(";"):
             color = color.strip()
             path = os.path.abspath(os.path.join(out, "svg", f"a3-{r['id']}-{color}.svg"))
+            mark = MARKS.get((r.get("mark") or "").strip().upper())
             with open(path, "w") as fh:
-                fh.write(a3_svg(name, key, r["role"].strip(), color, tag=r["id"].upper(), mark=MARKS.get((r.get("mark") or "").strip().upper())))
+                fh.write(a3_svg(name, key, r["role"].strip(), color, tag=r["id"].upper(), mark=mark))
+            with open(os.path.join(out, "mockup", f"mockup-{r['id']}-{color}.svg"), "w") as fh:
+                fh.write(mockup_svg(name, key, r["role"].strip(), color, mark=mark))
             by_color.setdefault(color, []).append(path)
             rows.append([r["id"], name, r["team"], r["role"], color, cm(BACK), cm(FRONT), cm(SLEEVE)])
     for color, paths in by_color.items():
